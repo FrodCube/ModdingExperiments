@@ -8,4 +8,5 @@ public class BlockInfo {
 	public static final int RUBIK_DEFAULT = 2000;
 	public static final String RUBIK_UNLOCALIZED = "rubik";
 	public static final String RUBIK_NAME = "Rubik's Cube";	
+	public static final String RUBIK_TE = "rubikTE";
 }

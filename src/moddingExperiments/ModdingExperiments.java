@@ -32,14 +32,16 @@ public class ModdingExperiments {
 	@EventHandler
     public void preInit(FMLPreInitializationEvent e) {
         ConfigurationHandler.init(e.getSuggestedConfigurationFile());
-        
-    	Blocks.init();
-    	Items.init();
-    	Entities.init();
+    	proxy.initRenderers();
+    	proxy.initSounds();
     }
     
     @EventHandler
     public void load(FMLInitializationEvent e) {
+    	Blocks.init();
+    	Items.init();
+    	Entities.init();
+    	
     	Items.registerNames();
 		Items.registerRecipies();
 		
