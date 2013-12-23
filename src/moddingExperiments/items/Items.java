@@ -1,5 +1,7 @@
 package moddingExperiments.items;
 
+import net.minecraftforge.common.Configuration;
+
 public class Items {
 
 	public static void init() {
@@ -14,7 +16,7 @@ public class Items {
 
 	}
 
-	public static void readIdFromConfig() {
+	public static void readIdFromConfig(Configuration config) {
 
 	}
 }

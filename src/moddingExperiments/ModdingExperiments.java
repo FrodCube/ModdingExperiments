@@ -31,11 +31,7 @@ public class ModdingExperiments {
 	
 	@EventHandler
     public void preInit(FMLPreInitializationEvent e) {
-		LogHelper.info("ModdingExperiments is loading!");
         ConfigurationHandler.init(e.getSuggestedConfigurationFile());
-        
-        Blocks.readIdFromConfig();
-        Items.readIdFromConfig();
         
     	Blocks.init();
     	Items.init();
