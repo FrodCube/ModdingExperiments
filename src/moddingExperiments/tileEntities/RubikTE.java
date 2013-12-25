@@ -151,6 +151,7 @@ public class RubikTE extends TileEntity {
 	}
 
 	private void performMove() {
+		//TODO DEBUGGE DEBUGGE DEBBUDEBBUGIBUGGE
 		if (move < 0)
 			return;
 		int pps = RubikModel.PIECES_PER_SIDE;
@@ -207,7 +208,7 @@ public class RubikTE extends TileEntity {
 		readFromNBT(pkt.data);
 		tempAngle = 0;
 		getFace();
-		System.out.println("Packet Received");
+		System.out.println("Packet Received Move: " + move + (clockwise? " clockwise" : " anticlockwise"));
 	}
 
 	@Override
@@ -230,7 +231,7 @@ public class RubikTE extends TileEntity {
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
 				for (int z = 0; z < pps; z++) {
-					System.out.println((worldObj.isRemote ? "client" : "server") + " " + pieces[x][y][z].toString());
+					System.out.println(FMLCommonHandler.instance().getEffectiveSide().toString() + " " + pieces[x][y][z].toString());
 				}
 			}
 		}
@@ -255,17 +256,17 @@ public class RubikTE extends TileEntity {
 		}
 	}
 
-	public void setMove(int i, boolean clockwise) {
+	public void setMove(int i, boolean clock) {
 		// TODO
 		if (move > -1)
 			return;
 		System.out.println("__________________________________________________________________________");
 		Random ran = new Random();
 		this.move = ran.nextInt(9);
-		this.clockwise = ran.nextBoolean();
+		clockwise = ran.nextBoolean();
 		System.out.println("MOVE: " + move + (clockwise? " CLOCKWISE" : " ANTICLOCKWISE"));
 		/*
-		 * this.move = i; this.clockwise = clockwise;
+		 * this.move = i; this.clockwise = clock;
 		 */
 		getFace();
 	}
