@@ -42,7 +42,12 @@ public class RubikBlock extends BlockContainer {
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
 		if (!world.isRemote) {
-			world.setBlockMetadataWithNotify(x, y, z, side + 1, 3);
+			TileEntity te = world.getBlockTileEntity(x, y, z);
+			if (te instanceof RubikTE) {
+				// TODO change setMove thing
+				((RubikTE) te).setMove(side + 1, false);
+				world.markBlockForUpdate(x, y, z);
+			}
 		}
 		return true;
 	}
