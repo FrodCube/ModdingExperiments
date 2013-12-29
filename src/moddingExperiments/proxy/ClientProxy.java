@@ -1,14 +1,14 @@
 package moddingExperiments.proxy;
 
 import moddingExperiments.client.renderer.RubikRenderer;
-import moddingExperiments.tileEntities.RubikTE;
+import moddingExperiments.tileEntities.RubikTileEntity;
 import cpw.mods.fml.client.registry.ClientRegistry;
 
 public class ClientProxy extends CommonProxy {
 	
 	@Override
 	public void initRenderers() {
-		ClientRegistry.bindTileEntitySpecialRenderer(RubikTE.class, new RubikRenderer());
+		ClientRegistry.bindTileEntitySpecialRenderer(RubikTileEntity.class, new RubikRenderer());
 	}
 
 }

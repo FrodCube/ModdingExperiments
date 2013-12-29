@@ -1,7 +1,7 @@
 package moddingExperiments.blocks;
 
 import moddingExperiments.lib.BlockInfo;
-import moddingExperiments.tileEntities.RubikTE;
+import moddingExperiments.tileEntities.RubikTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -27,7 +27,7 @@ public class Blocks {
 	}
 	
 	public static void registerTileEntities() {
-		GameRegistry.registerTileEntity(RubikTE.class, BlockInfo.RUBIK_TE);
+		GameRegistry.registerTileEntity(RubikTileEntity.class, BlockInfo.RUBIK_TE);
 	}
 	
 	public static void readIdFromConfig(Configuration config) {

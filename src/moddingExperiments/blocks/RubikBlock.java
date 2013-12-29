@@ -1,9 +1,10 @@
 package moddingExperiments.blocks;
 
-import moddingExperiments.tileEntities.RubikTE;
+import moddingExperiments.tileEntities.RubikTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
@@ -32,21 +33,22 @@ public class RubikBlock extends BlockContainer {
 	public boolean isOpaqueCube() {
 		return false;
 	}
-
+	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Icon getIcon(int par1, int par2) {
-		return Block.cloth.getIcon(0, 15);
+	public void registerIcons(IconRegister register) {
+		blockIcon = register.registerIcon("moddingExperiments:rubik");
 	}
 
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
 		if (!world.isRemote) {
 			TileEntity te = world.getBlockTileEntity(x, y, z);
-			if (te instanceof RubikTE) {
+			if (te instanceof RubikTileEntity) {
 				// TODO change setMove thing
-				((RubikTE) te).setMove(side + 1, false);
-				world.markBlockForUpdate(x, y, z);
+				if (((RubikTileEntity) te).setMove(side, false)) {
+					world.markBlockForUpdate(x, y, z);
+				}
 			}
 		}
 		return true;
@@ -54,7 +56,7 @@ public class RubikBlock extends BlockContainer {
 
 	@Override
 	public TileEntity createNewTileEntity(World world) {
-		return new RubikTE();
+		return new RubikTileEntity();
 	}
 
 }
