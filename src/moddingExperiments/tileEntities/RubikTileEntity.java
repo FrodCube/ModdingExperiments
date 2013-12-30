@@ -30,7 +30,6 @@ public class RubikTileEntity extends TileEntity {
 		}
 
 		public void performMove() {
-			//debug?
 			rotation = rotation.rotate(tempRotation);
 			tempRotation = new Vector3i();
 		}
@@ -95,7 +94,7 @@ public class RubikTileEntity extends TileEntity {
 		tempAngle += ANGLE;
 		if (clockwise)
 			ang *= -1;
-		System.out.println("TEMPANGLE: " + tempAngle + " ANGLE: " + ang + " FACE NUMBER " + face.length);
+//		System.out.println("TEMPANGLE: " + tempAngle + " ANGLE: " + ang + " FACE NUMBER " + face.length);
 		for (Piece piece : face) {
 			if (piece == null) {
 				System.out.println("FOUND NULL PIECE WHILE MOVING D:");
@@ -112,7 +111,7 @@ public class RubikTileEntity extends TileEntity {
 		}
 
 		if (face[0] != null) {
-			System.out.println(face[0].toString());
+			//System.out.println(worldObj.isRemote ? "Client " : "Server " + face[0].toString());
 		}
 
 		return tempAngle >= TOTAL_ANGLE;
@@ -121,6 +120,7 @@ public class RubikTileEntity extends TileEntity {
 	private void getFace() {
 		if (move == NO_MOVE)
 			return;
+		System.out.println("** GETTING FACE **");
 		int pps = RubikModel.PIECES_PER_SIDE;
 		int i = 0;
 		int slice = move % 3;
@@ -137,7 +137,7 @@ public class RubikTileEntity extends TileEntity {
 					Vector3i piece = cube[x][y][z];
 					face[i] = pieces[piece.getX()][piece.getY()][piece.getZ()];
 
-					//System.out.println((new Vector3i(x, y, z)).toString() + " = " + piece.toString());
+					System.out.println((worldObj.isRemote ? "Client" : "Server") + " Face: " + (new Vector3i(x, y, z)).toString() + " = " + piece.toString());
 					if (face[i] == null) {
 						System.out.println("FOUND NULL PIECE WHILE CREATING THE FACE D:");
 						continue;
@@ -153,6 +153,7 @@ public class RubikTileEntity extends TileEntity {
 		// TODO DEBUGGE DEBUGGE DEBBUDEBBUGIBUGGE
 		if (move == NO_MOVE)
 			return;
+		System.out.println("** PERFORMING MOVE **");
 		int pps = RubikModel.PIECES_PER_SIDE;
 		int i = 0;
 		int slice = move % 3;
@@ -169,7 +170,7 @@ public class RubikTileEntity extends TileEntity {
 						continue;
 					int j = !clockwise ? pps * (i % pps) + Math.abs((i / pps) - (pps - 1)) : pps * (i / pps) + Math.abs((i % pps) - (pps - 1));
 					tempFace[j] = cube[x][y][z];
-
+					
 					//System.out.println(i + " ---> " + j);
 
 					i++;
@@ -187,6 +188,7 @@ public class RubikTileEntity extends TileEntity {
 						continue;
 					if (axis == 2 && x != slice)
 						continue;
+					System.out.println("Piece in " + (new Vector3i(x, y, z).toString()) + " is now " + tempFace[i].toString());
 					cube[x][y][z] = tempFace[i];
 					i++;
 				}
@@ -224,7 +226,7 @@ public class RubikTileEntity extends TileEntity {
 					Vector3i vCube = cube[x][y][z];
 					NBTTagCompound pieceTag = new NBTTagCompound();
 
-					//TODO better networking, I'm sending too much stuff (also getting wrong stuff from the server :\)
+					//TODO better networking, I'm sending too much stuff
 					pieceTag.setByteArray("rotation", piece.rotation.toArray());
 					pieceTag.setByteArray("tempRotation", piece.tempRotation.toArray());
 					pieceTag.setByteArray("cube", vCube.toArray());
@@ -269,14 +271,6 @@ public class RubikTileEntity extends TileEntity {
 		move = tag.getByte("move");
 		clockwise = tag.getBoolean("clockwise");
 		tempAngle = tag.getInteger("tempAngle");
-
-		/*
-		 * for (int x = 0; x < pps; x++) { for (int y = 0; y < pps; y++) { for
-		 * (int z = 0; z < pps; z++) {
-		 * System.out.println(FMLCommonHandler.instance
-		 * ().getEffectiveSide().toString() + " " + pieces[x][y][z].toString());
-		 * } } }
-		 */
 	}
 
 	public boolean setMove(int i, boolean clock) {
@@ -284,7 +278,7 @@ public class RubikTileEntity extends TileEntity {
 		if (move != NO_MOVE)
 			return false;
 		System.out.println("__________________________________________________________________________");
-		System.out.println(" |o/ " + pieces[0][0][0].toString() + " " + cube[0][0][0].toString());
+		System.out.println(" piece[0][0][0] " + pieces[0][0][0].toString() + " Position: " + cube[0][0][0].toString());
 		Random random = new Random();
 		this.move = random.nextInt(9);
 		this.clockwise = random.nextBoolean();
@@ -293,8 +287,8 @@ public class RubikTileEntity extends TileEntity {
 		return true;
 	}
 
-	public Matrix3i getRotation(int i) {
-		Matrix3i rotation = pieces[i % RubikModel.PIECES_PER_SIDE][i / RubikModel.PIECES_PER_FACE][(i % RubikModel.PIECES_PER_FACE) / RubikModel.PIECES_PER_SIDE].rotation;
+	public Matrix3i getRotation(int x, int y, int z) {
+		Matrix3i rotation = pieces[x][y][z].rotation;
 		if (rotation == null) {
 			rotation = new Matrix3i();
 			rotation.setIdentity();
@@ -302,8 +296,8 @@ public class RubikTileEntity extends TileEntity {
 		return rotation;
 	}
 
-	public Vector3i getTempRotation(int i) {
-		Vector3i tempRotation = pieces[i % RubikModel.PIECES_PER_SIDE][i / RubikModel.PIECES_PER_FACE][(i % RubikModel.PIECES_PER_FACE) / RubikModel.PIECES_PER_SIDE].tempRotation;
+	public Vector3i getTempRotation(int x, int y, int z) {
+		Vector3i tempRotation = pieces[x][y][z].tempRotation;
 		if (tempRotation == null) {
 			tempRotation = new Vector3i();
 		}

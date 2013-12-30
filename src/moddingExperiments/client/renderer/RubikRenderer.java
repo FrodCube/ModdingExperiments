@@ -13,7 +13,7 @@ import org.lwjgl.opengl.GL11;
 public class RubikRenderer extends TileEntitySpecialRenderer {
 
 	public RubikModel model;
-	public ResourceLocation texture = new ResourceLocation(ModInfo.MODID, "textures/models/rubik.png");
+	public ResourceLocation texture = new ResourceLocation(ModInfo.TEXTURE_FOLDER, "textures/models/rubik.png");
 
 	public RubikRenderer() {
 		this.model = new RubikModel();
@@ -30,7 +30,7 @@ public class RubikRenderer extends TileEntitySpecialRenderer {
 		GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
 		GL11.glScalef(-1.0F, -1.0F, 1.0F);
 		
-		//Minecraft.getMinecraft().renderEngine.bindTexture(texture);
+		Minecraft.getMinecraft().renderEngine.bindTexture(texture);
 
 		model.render(rubik, 0.0625F);
 

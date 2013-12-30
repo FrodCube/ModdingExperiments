@@ -1,5 +1,6 @@
 package moddingExperiments.blocks;
 
+import moddingExperiments.lib.ModInfo;
 import moddingExperiments.tileEntities.RubikTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -37,7 +38,7 @@ public class RubikBlock extends BlockContainer {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister register) {
-		blockIcon = register.registerIcon("moddingExperiments:rubik");
+		blockIcon = register.registerIcon(ModInfo.TEXTURE_FOLDER + ":rubik");
 	}
 
 	@Override
