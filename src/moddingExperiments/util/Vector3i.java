@@ -78,6 +78,15 @@ public class Vector3i {
 	public String toString() {
 		return "( " + x + ", " + y + ", " + z + " )";
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Vector3i)) {
+			return false;
+		}
+		Vector3i v = (Vector3i) obj;
+		return this.x == v.getX() && this.y == v.getY() && this.z == v.getZ();
+	}
 
 	public byte[] toArray() {
 		return new byte[] { (byte) x, (byte) y, (byte) z };

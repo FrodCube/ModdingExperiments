@@ -5,6 +5,7 @@ import java.util.Random;
 import moddingExperiments.client.models.RubikModel;
 import moddingExperiments.util.Matrix3i;
 import moddingExperiments.util.Vector3i;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
@@ -17,6 +18,7 @@ public class RubikTileEntity extends TileEntity {
 	public class Piece {
 		public Matrix3i rotation;
 		public Vector3i tempRotation;
+		public String name;
 
 		public Piece() {
 			rotation = new Matrix3i();
@@ -33,14 +35,14 @@ public class RubikTileEntity extends TileEntity {
 			String s = this.toString();
 			rotation = rotation.rotate(tempRotation);
 			tempRotation = new Vector3i();
-			
+
 			s += "----->" + rotation.toString();
 //			System.out.println(s);
 		}
 
 		@Override
 		public String toString() {
-			return "Piece: ROTATION: " + rotation.toString() + " TEMP_ROTATION: " + tempRotation.toString();
+			return "Piece name: " + name + " ROTATION: " + rotation.toString() + " TEMP_ROTATION: " + tempRotation.toString();
 		}
 	}
 
@@ -71,6 +73,7 @@ public class RubikTileEntity extends TileEntity {
 			for (int y = 0; y < RubikModel.PIECES_PER_SIDE; y++) {
 				for (int z = 0; z < RubikModel.PIECES_PER_SIDE; z++) {
 					pieces[x][y][z] = new Piece();
+					pieces[x][y][z].name = (new Vector3i(x, y, z)).toString();
 					cube[x][y][z] = new Vector3i(x, y, z);
 				}
 			}
@@ -93,7 +96,7 @@ public class RubikTileEntity extends TileEntity {
 	private boolean updateMoveProgress() {
 		// TODO Support for all sizes up to 16x16 (metadata = size)
 		// System.out.println(worldObj.isRemote ? "Client" : "Server");
-		int axis = move / 3;		
+		int axis = move / 3;
 		tempAngle += ANGLE;
 		int ang = (tempAngle + ANGLE) >= TOTAL_ANGLE ? TOTAL_ANGLE : tempAngle;
 		if (clockwise)
@@ -107,11 +110,11 @@ public class RubikTileEntity extends TileEntity {
 			// TODO CHANGE CHANGE CHANGE CHANGE (+ partial tick time?)
 
 			if (axis == 0)
-				piece.tempRotation.setY(ang);
+				piece.tempRotation.setY(-ang);
 			else if (axis == 1)
-				piece.tempRotation.setZ(ang);
-			else if (axis == 2)
 				piece.tempRotation.setX(ang);
+			else if (axis == 2)
+				piece.tempRotation.setZ(ang);
 		}
 
 		if (face[0] != null) {
@@ -160,6 +163,16 @@ public class RubikTileEntity extends TileEntity {
 			return;
 		System.out.println("** PERFORMING MOVE **");
 		int pps = RubikModel.PIECES_PER_SIDE;
+
+		Vector3i[][][] previousCube = new Vector3i[RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE];
+		for (int x = 0; x < pps; x++) {
+			for (int y = 0; y < pps; y++) {
+				for (int z = 0; z < pps; z++) {
+					previousCube[x][y][z] = new Vector3i(cube[x][y][z].getX(), cube[x][y][z].getY(), cube[x][y][z].getZ());
+				}
+			}
+		}
+
 		int i = 0;
 		int slice = move % 3;
 		int axis = move / 3;
@@ -175,20 +188,20 @@ public class RubikTileEntity extends TileEntity {
 						continue;
 					int j = !clockwise ? pps * (i % pps) + Math.abs((i / pps) - (pps - 1)) : pps * (i / pps) + Math.abs((i % pps) - (pps - 1));
 					tempFace[j] = cube[x][y][z];
-					System.out.println(i + " found: " +  cube[x][y][z].toString() + " at " + (new Vector3i(x, y, z).toString()));
+					System.out.println(i + " found: " + cube[x][y][z].toString() + " at " + (new Vector3i(x, y, z).toString()));
 					System.out.println(i + " ---> " + j);
 
 					i++;
 				}
 			}
 		}
-		
+
 		System.out.println("TEMP FACE IS: ");
-		
+
 		for (int x = 0; x < tempFace.length; x++) {
-			System.out.println(x+ ": " + tempFace[x].toString());
+			System.out.println(x + ": " + tempFace[x].toString());
 		}
-		
+
 		System.out.println("END TEMPFACE");
 
 		i = 0;
@@ -212,6 +225,14 @@ public class RubikTileEntity extends TileEntity {
 			for (int y = 0; y < pps; y++) {
 				for (int z = 0; z < pps; z++) {
 					pieces[x][y][z].performMove();
+				}
+			}
+		}
+
+		for (int x = 0; x < pps; x++) {
+			for (int y = 0; y < pps; y++) {
+				for (int z = 0; z < pps; z++) {
+					System.out.println(previousCube[x][y][z].toString() + (previousCube[x][y][z].equals(cube[x][y][z]) ? " didn't move" : " changed") + " and became " + cube[x][y][z].toString());
 				}
 			}
 		}
@@ -243,6 +264,8 @@ public class RubikTileEntity extends TileEntity {
 					pieceTag.setByteArray("rotation", piece.rotation.toArray());
 					pieceTag.setByteArray("tempRotation", piece.tempRotation.toArray());
 					pieceTag.setByteArray("cube", vCube.toArray());
+
+					pieceTag.setString("name", piece.name);
 
 					// System.out.println(piece.rotation.toString() + " = " +
 					// Matrix3i.fromArray(pieceTag.getByteArray("rotation")).toString());
@@ -282,6 +305,8 @@ public class RubikTileEntity extends TileEntity {
 					pieces[x][y][z].tempRotation = Vector3i.fromArray(pieceTag.getByteArray("tempRotation"));
 					cube[x][y][z] = Vector3i.fromArray(pieceTag.getByteArray("cube"));
 
+					pieces[x][y][z].name = pieceTag.getString("name");
+
 					// System.out.println("Read: rotation: " +
 					// pieceTag.getByteArray("rotation").length +
 					// " tempRotation: " +
@@ -294,7 +319,8 @@ public class RubikTileEntity extends TileEntity {
 		clockwise = tag.getBoolean("clockwise");
 		tempAngle = tag.getInteger("tempAngle");
 	}
-
+	
+	int tempMove = -1;
 	public boolean setMove(int i, boolean clock) {
 		// TODO CLOCKWISE MOVE LOGIC IS WRONG
 		if (move != NO_MOVE)
@@ -302,12 +328,15 @@ public class RubikTileEntity extends TileEntity {
 		System.out.println("__________________________________________________________________________");
 		System.out.println(" piece[0][0][0]: " + pieces[0][0][0].toString() + " Position: " + cube[0][0][0].toString());
 		Random random = new Random();
-		 this.move = random.nextInt(9);
+		//this.move = random.nextInt(9);
 //		 this.clockwise = random.nextBoolean();
 		//move = 3;
+		move = (tempMove + 1) % 9;
+		tempMove = move;
 		clockwise = false;
 		getFace();
 		System.out.println("MOVE: " + move + (clockwise ? " CLOCKWISE" : " ANTICLOCKWISE"));
+		Minecraft.getMinecraft().thePlayer.addChatMessage("MOVE: " + move + (clockwise ? " CLOCKWISE" : " ANTICLOCKWISE"));
 		return true;
 	}
 
@@ -334,13 +363,27 @@ public class RubikTileEntity extends TileEntity {
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
 				for (int z = 0; z < pps; z++) {
-					if (y != 0) {
-						continue;
-					}
-					System.out.println((new Vector3i(x, y, z)).toString() + ": " + pieces[x][y][z].toString() + " POSITION: " + cube[x][y][z].toString());
+					System.out.println((new Vector3i(x, y, z)).toString() + ": " + pieces[cube[x][y][z].getX()][cube[x][y][z].getY()][cube[x][y][z].getZ()].toString() + " POSITION: " + cube[x][y][z].toString());
 				}
 			}
 		}
 		System.out.println("******** END PRINTING ********");
+	}
+
+	public void clearCube() {
+		int pps = RubikModel.PIECES_PER_SIDE;
+		for (int x = 0; x < pps; x++) {
+			for (int y = 0; y < pps; y++) {
+				for (int z = 0; z < pps; z++) {
+					if ((x == 0 && y == 0 && z == 0) || (x == 2 && y == 0 && z == 0) || (x == 0 && y == 1 && z == 0) || (x == 0 && y == 0 && z == 1)) {
+						continue;
+					}
+					
+					pieces[x][y][z].tempRotation = new Vector3i(0, 45, 0);
+				}
+			}
+		}
+		
+		worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 	}
 }

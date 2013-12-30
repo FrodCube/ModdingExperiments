@@ -46,14 +46,14 @@ public class Matrix3i {
 	public Matrix3i rotate(Vector3i angles) {
 		Matrix3i rotation = new Matrix3i();
 
-		if (angles.getX() != 0) {
+		if (angles.getZ() != 0) {
 			rotation.aa = 1;
 			if (angles.getX() > 0) {
-				rotation.bc = -1;
-				rotation.cb = 1;
-			} else {
 				rotation.bc = 1;
 				rotation.cb = -1;
+			} else {
+				rotation.bc = -1;
+				rotation.cb = 1;
 			}
 		} else if (angles.getY() != 0) {
 			rotation.bb = 1;
@@ -64,14 +64,14 @@ public class Matrix3i {
 				rotation.ac = 1;
 				rotation.ca = -1;
 			}
-		} else if (angles.getZ() != 0) {
+		} else if (angles.getX() != 0) {
 			rotation.cc = 1;
 			if (angles.getZ() > 0) {
-				rotation.ab = 1;
-				rotation.ba = -1;
-			} else {
 				rotation.ab = -1;
 				rotation.ba = 1;
+			} else {
+				rotation.ab = 1;
+				rotation.ba = -1;
 			}
 		} else {
 			rotation.setIdentity();

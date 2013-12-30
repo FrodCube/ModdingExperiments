@@ -201,6 +201,8 @@ public class RubikModel extends ModelBase {
 			}
 		}
 		
+		//pieces[0][0][0].renderWithRotation(scale, rubik.getRotation(0, 0, 0), rubik.getTempRotation(0, 0, 0));
+		
 //		Vector3i r1 = new Vector3i(90, 0, 0);
 //		Vector3i r2 = new Vector3i(0, 90, 0);
 //		Vector3i r3 = new Vector3i(0, 0, 90);
