@@ -193,10 +193,34 @@ public class RubikModel extends ModelBase {
 		for (int x = 0; x < pieces.length; x++) {
 			for (int y = 0; y < pieces.length; y++) {
 				for (int z = 0; z < pieces.length; z++) {
+//					if (y != 0) {
+//						continue;
+//					}
 					pieces[x][y][z].renderWithRotation(scale, rubik.getRotation(x, y, z), rubik.getTempRotation(x, y, z));
 				}
 			}
 		}
+		
+//		Vector3i r1 = new Vector3i(90, 0, 0);
+//		Vector3i r2 = new Vector3i(0, 90, 0);
+//		Vector3i r3 = new Vector3i(0, 0, 90);
+//		Vector3i r4 = new Vector3i(0, -90, 0);
+//		Matrix3i m = new Matrix3i(1, 0, 0, 0, 1, 0, 0, 0, 1);
+//		m = m.rotate(r1);
+//		m = m.rotate(r2);
+//		m = m.rotate(r3);
+//		m = m.rotate(r4);
+//		Vector3i v = new Vector3i(0, 180, 0);
+//		
+//		pieces[0][0][0].renderWithRotation(scale, m, v);
+//		pieces[1][0][0].renderWithRotation(scale, m, v);
+//		pieces[2][0][0].renderWithRotation(scale, m, v);
+//		pieces[0][0][0].renderWithRotation(scale, m, v);
+//		pieces[0][1][0].renderWithRotation(scale, m, v);
+//		pieces[0][2][0].renderWithRotation(scale, m, v);
+//		pieces[0][0][0].renderWithRotation(scale, m, v);
+//		pieces[0][0][1].renderWithRotation(scale, m, v);
+//		pieces[0][0][2].renderWithRotation(scale, m, v);
 	}
 
 }

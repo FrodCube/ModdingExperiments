@@ -47,6 +47,11 @@ public class RubikBlock extends BlockContainer {
 			TileEntity te = world.getBlockTileEntity(x, y, z);
 			if (te instanceof RubikTileEntity) {
 				// TODO change setMove thing
+				if (side == 1) {
+					((RubikTileEntity) te).printCube();
+					return true;
+				}
+				
 				if (((RubikTileEntity) te).setMove(side, false)) {
 					world.markBlockForUpdate(x, y, z);
 				}

@@ -53,7 +53,7 @@ public class Matrix3i {
 				rotation.cb = 1;
 			} else {
 				rotation.bc = 1;
-				rotation.cb = 1;
+				rotation.cb = -1;
 			}
 		} else if (angles.getY() != 0) {
 			rotation.bb = 1;
