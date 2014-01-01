@@ -1,5 +1,6 @@
 package moddingExperiments.blocks;
 
+import moddingExperiments.items.RubikItem;
 import moddingExperiments.lib.BlockInfo;
 import moddingExperiments.tileEntities.RubikTileEntity;
 import net.minecraft.block.Block;
@@ -14,7 +15,7 @@ public class Blocks {
 	public static Block rubik;
 
 	public static void init() {
-		rubik = (new RubikBlock(BlockInfo.RUBIK_ID, Material.rock)).setHardness(1.25F).setResistance(7.0F).setStepSound(Block.soundStoneFootstep).setUnlocalizedName(BlockInfo.RUBIK_UNLOCALIZED).setCreativeTab(CreativeTabs.tabMisc);
+		rubik = new RubikBlock(BlockInfo.RUBIK_ID, Material.rock);
 		GameRegistry.registerBlock(rubik, BlockInfo.RUBIK_KEY);
 	}
 
@@ -23,14 +24,13 @@ public class Blocks {
 	}
 
 	public static void registerRecipies() {
-
 	}
 	
 	public static void registerTileEntities() {
 		GameRegistry.registerTileEntity(RubikTileEntity.class, BlockInfo.RUBIK_TE);
 	}
 	
-	public static void readIdFromConfig(Configuration config) {
+	public static void readBlockInfoFromConfig(Configuration config) {
 		BlockInfo.RUBIK_ID = config.getBlock(BlockInfo.RUBIK_KEY, BlockInfo.RUBIK_DEFAULT).getInt();
 	}
 

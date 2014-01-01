@@ -19,91 +19,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class RubikModel extends ModelBase {
 
-	// Custom ModelBox for easier texturing
-	private class PieceBox extends ModelBox {
-
-		private final PositionTextureVertex[] red = new PositionTextureVertex[] {};
-
-		private PositionTextureVertex[] vertexPositions;
-		private TexturedQuad[] quadList;
-		public final float posX1;
-		public final float posY1;
-		public final float posZ1;
-		public final float posX2;
-		public final float posY2;
-		public final float posZ2;
-		public String name;
-
-		public PieceBox(ModelRenderer model, int texX, int texY, float x, float y, float z, int xSize, int ySize, int zSize, float scale, int pieceX, int pieceY, int pieceZ) {
-			super(model, texX, texY, x, y, z, xSize, ySize, zSize, scale);
-			this.posX1 = x;
-			this.posY1 = y;
-			this.posZ1 = z;
-			this.posX2 = x + (float) xSize;
-			this.posY2 = y + (float) ySize;
-			this.posZ2 = z + (float) zSize;
-			this.vertexPositions = new PositionTextureVertex[8];
-			this.quadList = new TexturedQuad[6];
-			float f4 = x + (float) xSize;
-			float f5 = y + (float) ySize;
-			float f6 = z + (float) zSize;
-			x -= scale;
-			y -= scale;
-			z -= scale;
-			f4 += scale;
-			f5 += scale;
-			f6 += scale;
-
-			if (model.mirror) {
-				float f7 = f4;
-				f4 = x;
-				x = f7;
-			}
-
-			PositionTextureVertex positiontexturevertex = new PositionTextureVertex(x, y, z, 0.0F, 0.0F);
-			PositionTextureVertex positiontexturevertex1 = new PositionTextureVertex(f4, y, z, 0.0F, 8.0F);
-			PositionTextureVertex positiontexturevertex2 = new PositionTextureVertex(f4, f5, z, 8.0F, 8.0F);
-			PositionTextureVertex positiontexturevertex3 = new PositionTextureVertex(x, f5, z, 8.0F, 0.0F);
-			PositionTextureVertex positiontexturevertex4 = new PositionTextureVertex(x, y, f6, 0.0F, 0.0F);
-			PositionTextureVertex positiontexturevertex5 = new PositionTextureVertex(f4, y, f6, 0.0F, 8.0F);
-			PositionTextureVertex positiontexturevertex6 = new PositionTextureVertex(f4, f5, f6, 8.0F, 8.0F);
-			PositionTextureVertex positiontexturevertex7 = new PositionTextureVertex(x, f5, f6, 8.0F, 0.0F);
-			this.vertexPositions[0] = positiontexturevertex;
-			this.vertexPositions[1] = positiontexturevertex1;
-			this.vertexPositions[2] = positiontexturevertex2;
-			this.vertexPositions[3] = positiontexturevertex3;
-			this.vertexPositions[4] = positiontexturevertex4;
-			this.vertexPositions[5] = positiontexturevertex5;
-			this.vertexPositions[6] = positiontexturevertex6;
-			this.vertexPositions[7] = positiontexturevertex7;
-			this.quadList[0] = new TexturedQuad(new PositionTextureVertex[] { positiontexturevertex5, positiontexturevertex1, positiontexturevertex2, positiontexturevertex6 }, 0, 8, 0, 8, model.textureWidth, model.textureHeight);
-			this.quadList[1] = new TexturedQuad(new PositionTextureVertex[] { positiontexturevertex, positiontexturevertex4, positiontexturevertex7, positiontexturevertex3 }, 8, 8, 0, 8, model.textureWidth, model.textureHeight);
-			this.quadList[2] = new TexturedQuad(new PositionTextureVertex[] { positiontexturevertex5, positiontexturevertex4, positiontexturevertex, positiontexturevertex1 }, 16, 8, 0, 8, model.textureWidth, model.textureHeight);
-			this.quadList[3] = new TexturedQuad(new PositionTextureVertex[] { positiontexturevertex2, positiontexturevertex3, positiontexturevertex7, positiontexturevertex6 }, 0, 8, 8, 8, model.textureWidth, model.textureHeight);
-			this.quadList[4] = new TexturedQuad(new PositionTextureVertex[] { positiontexturevertex1, positiontexturevertex, positiontexturevertex3, positiontexturevertex2 }, 8, 8, 8, 8, model.textureWidth, model.textureHeight);
-			this.quadList[5] = new TexturedQuad(new PositionTextureVertex[] { positiontexturevertex4, positiontexturevertex5, positiontexturevertex6, positiontexturevertex7 }, 16, 8, 8, 8, model.textureWidth, model.textureHeight);
-
-			if (model.mirror) {
-				for (int j1 = 0; j1 < this.quadList.length; ++j1) {
-					this.quadList[j1].flipFace();
-				}
-			}
-		}
-
-		@SideOnly(Side.CLIENT)
-		public void render(Tessellator par1Tessellator, float par2) {
-			for (int i = 0; i < this.quadList.length; ++i) {
-				this.quadList[i].draw(par1Tessellator, par2);
-			}
-		}
-
-		public PieceBox func_78244_a(String par1Str) {
-			this.name = par1Str;
-			return this;
-		}
-
-	}
-
 	// Custom ModelRenderer for better rendering
 	private class PieceRenderer extends ModelRenderer {
 
@@ -129,11 +44,6 @@ public class RubikModel extends ModelBase {
 
 			GL11.glEndList();
 			this.compiled = true;
-		}
-
-		public ModelRenderer addBox(float x, float y, float z, int xSize, int ySize, int zSize, int pieceX, int pieceY, int pieceZ) {
-			cubeList.add(new PieceBox(this, this.textureOffsetX, this.textureOffsetY, x, y, z, xSize, ySize, zSize, 0.0F, pieceX, pieceY, pieceZ));
-			return this;
 		}
 
 		@SideOnly(Side.CLIENT)
@@ -165,25 +75,37 @@ public class RubikModel extends ModelBase {
 		}
 	}
 
-	public static final int PIECES_PER_SIDE = 6;
-	public static final int PIECES_PER_FACE = PIECES_PER_SIDE * PIECES_PER_SIDE;
-	public static final int PIECES_PER_CUBE = PIECES_PER_SIDE * PIECES_PER_SIDE * PIECES_PER_SIDE;
-	public static final float BLOCK_SIZE = 16.0F;
-	public static final float CENTER = BLOCK_SIZE / 2.0F;
-	public static final float PIECE_WIDTH = BLOCK_SIZE / PIECES_PER_SIDE;
-	public static final int INT_PIECE_WIDTH = (int) PIECE_WIDTH;
-	public static final float OFFSET = 0.0F;
+	public final int PIECES_PER_SIDE;
+	public final int PIECES_PER_FACE;
+	public final int PIECES_PER_CUBE;
+	public final float BLOCK_SIZE = 16.0F;
+	public final float CENTER = BLOCK_SIZE / 2.0F;
+	public final float PIECE_WIDTH;
+	public final int INT_PIECE_WIDTH;
+	public final float OFFSET;
 
-	PieceRenderer[][][] pieces = new PieceRenderer[PIECES_PER_SIDE][PIECES_PER_SIDE][PIECES_PER_SIDE];
+	PieceRenderer[][][] pieces;
 
-	public RubikModel() {
+	public RubikModel(int pps) {
 		this.textureWidth = 64;
 		this.textureHeight = 64;
-
 		int texY = 0;
+
+		PIECES_PER_SIDE = pps;
+		PIECES_PER_FACE = pps * pps;
+		PIECES_PER_CUBE = pps * pps * pps;
+		PIECE_WIDTH = BLOCK_SIZE / PIECES_PER_SIDE;
+		INT_PIECE_WIDTH = (int) PIECE_WIDTH;
+
+		//TODO offset
+		OFFSET = 0.0F;
+
+		pieces = new PieceRenderer[PIECES_PER_SIDE][PIECES_PER_SIDE][PIECES_PER_SIDE];
+
 		switch (PIECES_PER_SIDE) {
 			case 2:
 				texY = 0;
+				break;
 			case 3:
 				texY = 16;
 				break;
@@ -260,6 +182,16 @@ public class RubikModel extends ModelBase {
 		// pieces[1][1][1].renderWithRotation(scale, m, v);
 		// pieces[0][1][1].renderWithRotation(scale, m3, v);
 		// pieces[1][0][1].renderWithRotation(scale, m, v);
+	}
+
+	public void render(float scale) {
+		for (int x = 0; x < pieces.length; x++) {
+			for (int y = 0; y < pieces.length; y++) {
+				for (int z = 0; z < pieces.length; z++) {
+					pieces[x][y][z].renderWithRotation(scale, (new Matrix3i().setIdentity()), new Vector3i());
+				}
+			}
+		}
 	}
 
 }

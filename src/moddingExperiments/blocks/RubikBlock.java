@@ -1,10 +1,14 @@
 package moddingExperiments.blocks;
 
+import moddingExperiments.config.ConfigurationHandler;
+import moddingExperiments.lib.BlockInfo;
 import moddingExperiments.lib.ModInfo;
 import moddingExperiments.tileEntities.RubikTileEntity;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -15,7 +19,13 @@ public class RubikBlock extends BlockContainer {
 
 	public RubikBlock(int id, Material material) {
 		super(id, material);
-		System.out.println("block created");
+		setHardness(1.25F);
+		setResistance(7.0F);
+		setStepSound(Block.soundStoneFootstep);
+		setUnlocalizedName(BlockInfo.RUBIK_UNLOCALIZED);
+		
+		//TODO remove this
+		setCreativeTab(CreativeTabs.tabMisc);
 	}
 
 	@Override
@@ -32,7 +42,7 @@ public class RubikBlock extends BlockContainer {
 	public boolean isOpaqueCube() {
 		return false;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister register) {
@@ -52,7 +62,7 @@ public class RubikBlock extends BlockContainer {
 					((RubikTileEntity) te).clearCube();
 					return true;
 				}
-				
+
 				if (((RubikTileEntity) te).setMove(side, false)) {
 					world.markBlockForUpdate(x, y, z);
 				}
@@ -63,7 +73,13 @@ public class RubikBlock extends BlockContainer {
 
 	@Override
 	public TileEntity createNewTileEntity(World world) {
-		return new RubikTileEntity();
+		return new RubikTileEntity(2);
+	}
+
+	@Override
+	public TileEntity createTileEntity(World world, int metadata) {
+		int pps = Math.min(metadata + 2, ConfigurationHandler.MAX_SIZE);
+		return new RubikTileEntity(pps);
 	}
 
 }
