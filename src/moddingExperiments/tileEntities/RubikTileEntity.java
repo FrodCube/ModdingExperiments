@@ -37,7 +37,7 @@ public class RubikTileEntity extends TileEntity {
 			tempRotation = new Vector3i();
 
 			s += "----->" + rotation.toString();
-//			System.out.println(s);
+			// System.out.println(s);
 		}
 
 		@Override
@@ -45,6 +45,10 @@ public class RubikTileEntity extends TileEntity {
 			return "Piece name: " + name + " ROTATION: " + rotation.toString() + " TEMP_ROTATION: " + tempRotation.toString();
 		}
 	}
+	
+	public static final int X_AXIS = 2;
+	public static final int Y_AXIS = 0;
+	public static final int Z_AXIS = 1;
 
 	public static final int NO_MOVE = -1;
 	public final float SPEED = 11F;
@@ -54,7 +58,8 @@ public class RubikTileEntity extends TileEntity {
 	private int progress;
 	private Vector3i[][][] cube;
 	private Piece[][][] pieces;
-	private Piece[] face;
+	// private Piece[] face;
+	private Vector3i[][] face;
 	private int move;
 	private boolean clockwise;
 	private int tempAngle;
@@ -63,7 +68,7 @@ public class RubikTileEntity extends TileEntity {
 		move = -1;
 		pieces = new Piece[RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE];
 		cube = new Vector3i[RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE];
-		face = new Piece[RubikModel.PIECES_PER_FACE];
+		face = new Vector3i[RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE];
 		newCube();
 	}
 
@@ -96,30 +101,35 @@ public class RubikTileEntity extends TileEntity {
 	private boolean updateMoveProgress() {
 		// TODO Support for all sizes up to 16x16 (metadata = size)
 		// System.out.println(worldObj.isRemote ? "Client" : "Server");
-		int axis = move / 3;
+		int pps = RubikModel.PIECES_PER_SIDE;
+		int axis = move / pps;
 		tempAngle += ANGLE;
 		int ang = (tempAngle + ANGLE) >= TOTAL_ANGLE ? TOTAL_ANGLE : tempAngle;
-		if (clockwise)
+		if (!clockwise)
 			ang *= -1;
-//		System.out.println("TEMPANGLE: " + tempAngle + " ANGLE: " + ang + " FACE NUMBER " + face.length);
-		for (Piece piece : face) {
-			if (piece == null) {
-				System.out.println("FOUND NULL PIECE WHILE MOVING D:");
-				continue;
+		// System.out.println("TEMPANGLE: " + tempAngle + " ANGLE: " + ang +
+		// " FACE NUMBER " + face.length);
+		for (int a = 0; a < pps; a++) {
+			for (int b = 0; b < pps; b++) {
+				Vector3i coords = face[a][b];
+				if (coords == null) {
+					continue;
+				}
+				
+				Piece piece = pieces[coords.getX()][coords.getY()][coords.getZ()];
+				if (piece == null) {
+					System.out.println("FOUND NULL PIECE WHILE MOVING D:");
+					continue;
+				}
+				// TODO CHANGE CHANGE CHANGE CHANGE (+ partial tick time?)
+
+				if (axis == Y_AXIS)
+					piece.tempRotation.setY(ang);
+				else if (axis == Z_AXIS)
+					piece.tempRotation.setZ(-ang);
+				else if (axis == X_AXIS)
+					piece.tempRotation.setX(ang);
 			}
-			// TODO CHANGE CHANGE CHANGE CHANGE (+ partial tick time?)
-
-			if (axis == 0)
-				piece.tempRotation.setY(-ang);
-			else if (axis == 1)
-				piece.tempRotation.setX(ang);
-			else if (axis == 2)
-				piece.tempRotation.setZ(ang);
-		}
-
-		if (face[0] != null) {
-			// System.out.println(worldObj.isRemote ? "Client " : "Server " +
-			// face[0].toString());
 		}
 
 		return tempAngle >= TOTAL_ANGLE;
@@ -131,22 +141,24 @@ public class RubikTileEntity extends TileEntity {
 		System.out.println("** GETTING FACE **");
 		int pps = RubikModel.PIECES_PER_SIDE;
 		int i = 0;
-		int slice = move % 3;
-		int axis = move / 3;
+		int slice = move % pps;
+		int axis = move / pps;
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
 				for (int z = 0; z < pps; z++) {
-					if (axis == 0 && y != slice)
+					if (axis == Y_AXIS && y != slice)
 						continue;
-					if (axis == 1 && z != slice)
+					if (axis == Z_AXIS && z != slice)
 						continue;
-					if (axis == 2 && x != slice)
+					if (axis == X_AXIS && x != slice)
 						continue;
 					Vector3i piece = cube[x][y][z];
-					face[i] = pieces[piece.getX()][piece.getY()][piece.getZ()];
+					face[i % pps][i / pps] = cube[x][y][z];
+					// face[i] =
+					// pieces[piece.getX()][piece.getY()][piece.getZ()];
 
 					System.out.println((worldObj.isRemote ? "Client" : "Server") + " Face: " + (new Vector3i(x, y, z)).toString() + " = " + piece.toString());
-					if (face[i] == null) {
+					if (face[i % pps][i / pps] == null) {
 						System.out.println("FOUND NULL PIECE WHILE CREATING THE FACE D:");
 						continue;
 					}
@@ -173,54 +185,50 @@ public class RubikTileEntity extends TileEntity {
 			}
 		}
 
+		int f = (int) Math.floor(pps / 2.0);
+		int c = (int) Math.ceil(pps / 2.0);
 		int i = 0;
-		int slice = move % 3;
-		int axis = move / 3;
-		Vector3i[] tempFace = new Vector3i[RubikModel.PIECES_PER_FACE];
-		for (int x = 0; x < pps; x++) {
-			for (int y = 0; y < pps; y++) {
-				for (int z = 0; z < pps; z++) {
-					if (axis == 0 && y != slice)
-						continue;
-					if (axis == 1 && z != slice)
-						continue;
-					if (axis == 2 && x != slice)
-						continue;
-					int j = !clockwise ? pps * (i % pps) + Math.abs((i / pps) - (pps - 1)) : pps * (i / pps) + Math.abs((i % pps) - (pps - 1));
-					tempFace[j] = cube[x][y][z];
-					System.out.println(i + " found: " + cube[x][y][z].toString() + " at " + (new Vector3i(x, y, z).toString()));
-					System.out.println(i + " ---> " + j);
+		int slice = move % pps;
+		int axis = move / pps;
 
-					i++;
+		if ((clockwise && axis == Y_AXIS) || (!clockwise && (axis == X_AXIS || axis == Z_AXIS))){
+			for (int x = 0; x < f; x++) {
+				for (int y = 0; y < c; y++) {
+					Vector3i temp = face[x][y];
+					face[x][y] = face[y][pps - 1 - x];
+					face[y][pps - 1 - x] = face[pps - 1 - x][pps - 1 - y];
+					face[pps - 1 - x][pps - 1 - y] = face[pps - 1 - y][x];
+					face[pps - 1 - y][x] = temp;
+				}
+			}
+		} else {
+			for (int x = 0; x < f; x++) {
+				for (int y = 0; y < c; y++) {
+					Vector3i temp = face[pps - 1 - y][x];
+					face[pps - 1 - y][x] = face[pps - 1 - x][pps - 1 - y];
+					face[pps - 1 - x][pps - 1 - y] = face[y][pps - 1 - x];
+					face[y][pps - 1 - x] = face[x][y];
+					face[x][y] = temp;
 				}
 			}
 		}
 
-		System.out.println("TEMP FACE IS: ");
-
-		for (int x = 0; x < tempFace.length; x++) {
-			System.out.println(x + ": " + tempFace[x].toString());
-		}
-
-		System.out.println("END TEMPFACE");
-
-		i = 0;
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
 				for (int z = 0; z < pps; z++) {
-					if (axis == 0 && y != slice)
+					if (axis == Y_AXIS && y != slice)
 						continue;
-					if (axis == 1 && z != slice)
+					if (axis == Z_AXIS && z != slice)
 						continue;
-					if (axis == 2 && x != slice)
+					if (axis == X_AXIS && x != slice)
 						continue;
-					System.out.println("Piece in " + (new Vector3i(x, y, z).toString()) + " is now " + tempFace[i].toString());
-					cube[x][y][z] = tempFace[i];
+					System.out.println("Piece in " + (new Vector3i(x, y, z).toString()) + " is now " + face[i % pps][i / pps].toString());
+					cube[x][y][z] = face[i % pps][i / pps];
 					i++;
 				}
 			}
 		}
-
+		
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
 				for (int z = 0; z < pps; z++) {
@@ -319,21 +327,22 @@ public class RubikTileEntity extends TileEntity {
 		clockwise = tag.getBoolean("clockwise");
 		tempAngle = tag.getInteger("tempAngle");
 	}
-	
+
 	int tempMove = -1;
+
 	public boolean setMove(int i, boolean clock) {
-		// TODO CLOCKWISE MOVE LOGIC IS WRONG
 		if (move != NO_MOVE)
 			return false;
+		
 		System.out.println("__________________________________________________________________________");
 		System.out.println(" piece[0][0][0]: " + pieces[0][0][0].toString() + " Position: " + cube[0][0][0].toString());
 		Random random = new Random();
-		//this.move = random.nextInt(9);
-//		 this.clockwise = random.nextBoolean();
-		//move = 3;
-		move = (tempMove + 1) % 9;
+		this.move = random.nextInt(3 * RubikModel.PIECES_PER_SIDE);
+		this.clockwise = random.nextBoolean();
+//		move = 2;
+		// move = (tempMove + 1) % 9;
 		tempMove = move;
-		clockwise = false;
+		//clockwise = true;
 		getFace();
 		System.out.println("MOVE: " + move + (clockwise ? " CLOCKWISE" : " ANTICLOCKWISE"));
 		Minecraft.getMinecraft().thePlayer.addChatMessage("MOVE: " + move + (clockwise ? " CLOCKWISE" : " ANTICLOCKWISE"));
@@ -375,15 +384,98 @@ public class RubikTileEntity extends TileEntity {
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
 				for (int z = 0; z < pps; z++) {
-					if ((x == 0 && y == 0 && z == 0) || (x == 2 && y == 0 && z == 0) || (x == 0 && y == 1 && z == 0) || (x == 0 && y == 0 && z == 1)) {
+					if ((x == 0 && y == 0 && z == 0) || (x == 1 && y == 0 && z == 0) || (x == 0 && y == 1 && z == 0) || (x == 0 && y == 0 && z == 1)) {
 						continue;
 					}
-					
+
 					pieces[x][y][z].tempRotation = new Vector3i(0, 45, 0);
 				}
 			}
 		}
-		
+
 		worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+	}
+
+	@Deprecated
+	private void oldPerformMove() {
+		// TODO DEBUGGE DEBUGGE DEBBUDEBBUGIBUGGE
+		if (move == NO_MOVE)
+			return;
+		System.out.println("** PERFORMING MOVE **");
+		int pps = RubikModel.PIECES_PER_SIDE;
+
+		Vector3i[][][] previousCube = new Vector3i[RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE][RubikModel.PIECES_PER_SIDE];
+		for (int x = 0; x < pps; x++) {
+			for (int y = 0; y < pps; y++) {
+				for (int z = 0; z < pps; z++) {
+					previousCube[x][y][z] = new Vector3i(cube[x][y][z].getX(), cube[x][y][z].getY(), cube[x][y][z].getZ());
+				}
+			}
+		}
+
+		int i = 0;
+		int slice = move % pps;
+		int axis = move / pps;
+		Vector3i[] tempFace = new Vector3i[RubikModel.PIECES_PER_FACE];
+		for (int x = 0; x < pps; x++) {
+			for (int y = 0; y < pps; y++) {
+				for (int z = 0; z < pps; z++) {
+					if (axis == 0 && y != slice)
+						continue;
+					if (axis == 1 && z != slice)
+						continue;
+					if (axis == 2 && x != slice)
+						continue;
+					int j = !clockwise ? pps * (i % pps) + Math.abs((i / pps) - (pps - 1)) : pps * (i / pps) + Math.abs((i % pps) - (pps - 1));
+					tempFace[j] = cube[x][y][z];
+					System.out.println(i + " found: " + cube[x][y][z].toString() + " at " + (new Vector3i(x, y, z).toString()));
+					System.out.println(i + " ---> " + j);
+
+					i++;
+				}
+			}
+		}
+
+		System.out.println("TEMP FACE IS: ");
+
+		for (int x = 0; x < tempFace.length; x++) {
+			System.out.println(x + ": " + tempFace[x].toString());
+		}
+
+		System.out.println("END TEMPFACE");
+
+		i = 0;
+		for (int x = 0; x < pps; x++) {
+			for (int y = 0; y < pps; y++) {
+				for (int z = 0; z < pps; z++) {
+					if (axis == 0 && y != slice)
+						continue;
+					if (axis == 1 && z != slice)
+						continue;
+					if (axis == 2 && x != slice)
+						continue;
+					System.out.println("Piece in " + (new Vector3i(x, y, z).toString()) + " is now " + tempFace[i].toString());
+					cube[x][y][z] = tempFace[i];
+					i++;
+				}
+			}
+		}
+
+		for (int x = 0; x < pps; x++) {
+			for (int y = 0; y < pps; y++) {
+				for (int z = 0; z < pps; z++) {
+					pieces[x][y][z].performMove();
+				}
+			}
+		}
+
+		for (int x = 0; x < pps; x++) {
+			for (int y = 0; y < pps; y++) {
+				for (int z = 0; z < pps; z++) {
+					System.out.println(previousCube[x][y][z].toString() + (previousCube[x][y][z].equals(cube[x][y][z]) ? " didn't move" : " changed") + " and became " + cube[x][y][z].toString());
+				}
+			}
+		}
+
 	}
 }

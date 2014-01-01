@@ -21,9 +21,11 @@ public class Matrix3i {
 		this.cc = cc;
 	}
 
-	public void setIdentity() {
+	public Matrix3i setIdentity() {
 		ab = ac = ba = bc = ca = cb = 0;
 		aa = bb = cc = 1;
+
+		return this;
 	}
 
 	public Matrix3i mult(Matrix3i m) {
@@ -46,32 +48,32 @@ public class Matrix3i {
 	public Matrix3i rotate(Vector3i angles) {
 		Matrix3i rotation = new Matrix3i();
 
-		if (angles.getZ() != 0) {
+		if (angles.getX() != 0) {
 			rotation.aa = 1;
 			if (angles.getX() > 0) {
-				rotation.bc = 1;
-				rotation.cb = -1;
-			} else {
 				rotation.bc = -1;
 				rotation.cb = 1;
+			} else {
+				rotation.bc = 1;
+				rotation.cb = -1;
 			}
 		} else if (angles.getY() != 0) {
 			rotation.bb = 1;
 			if (angles.getY() > 0) {
-				rotation.ac = -1;
-				rotation.ca = 1;
-			} else {
 				rotation.ac = 1;
 				rotation.ca = -1;
+			} else {
+				rotation.ac = -1;
+				rotation.ca = 1;
 			}
-		} else if (angles.getX() != 0) {
+		} else if (angles.getZ() != 0) {
 			rotation.cc = 1;
 			if (angles.getZ() > 0) {
-				rotation.ab = -1;
-				rotation.ba = 1;
-			} else {
 				rotation.ab = 1;
 				rotation.ba = -1;
+			} else {
+				rotation.ab = -1;
+				rotation.ba = 1;
 			}
 		} else {
 			rotation.setIdentity();
@@ -85,20 +87,31 @@ public class Matrix3i {
 	}
 
 	public Vector3f getAxis() {
-		if (aa != 0 && bb != 0 && cc != 0) {
-			if (aa == bb && bb == cc) {
-				return new Vector3f(1.0F, 0.0F, 0.0F);
-			} else {
-				if (aa > 0) {
-					return new Vector3f(1.0F, 0.0F, 0.0F);
-				} else if (bb > 0) {
-					return new Vector3f(0.0F, 1.0F, 0.0F);
-				} else if (cc > 0) {
-					return new Vector3f(0.0F, 0.0F, 1.0F);
-				}
+		float d = (float) (2 * Math.sin(getAngle()));
+		float f = 0.70710678118F; // = sqrt(2) / 2
+		if ((int) d == 0) {
+			if (aa == 1 && bb == 1 && cc == 1) {
+				return new Vector3f(1, 0, 0);
+			} else if (aa == 1 && bb == -1 && cc == -1) {
+				return new Vector3f(1, 0, 0);
+			} else if (aa == -1 && bb == 1 && cc == -1) {
+				return new Vector3f(0, 1, 0);
+			} else if (aa == -1 && bb == -1 && cc == 1) {
+				return new Vector3f(0, 0, 1);
+			} else if (aa == -1 && bc == -1 && cb == -1) {
+				return new Vector3f(0, f, -f);
+			} else if (aa == -1 && bc == 1 && cb == 1) {
+				return new Vector3f(0, f, f);
+			} else if (ac == -1 && bb == -1 && ca == -1) {
+				return new Vector3f(f, 0, -f);
+			} else if (ac == 1 && bb == -1 && ca == 1) {
+				return new Vector3f(f, 0, f);
+			} else if (ab == -1 && ba == -1 && cc == -1) {
+				return new Vector3f(-f, f, 0);
+			} else if (ab == 1 && ba == 1 && cc == -1) {
+				return new Vector3f(f, f, 0);
 			}
 		}
-		float d = (float) (2 * Math.sin(getAngle()));
 
 		float x = (cb - bc) / d;
 		float y = (ac - ca) / d;
@@ -132,7 +145,7 @@ public class Matrix3i {
 
 	@Override
 	public String toString() {
-		return "((" + aa + ", " + ab + ", " + ac + "), (" + ba + ", " + bb + ", " + bc + "), (" + ca + ", " + cb + ", " + cc + "))";
+		return "((" + aa + ", " + ab + ", " + ac + "), (" + ba + ", " + bb + ", " + bc + "), (" + ca + ", " + cb + ", " + cc + ")) Angle: " + Math.toDegrees(getAngle()) + " Axis: " + getAxis().toString();
 	}
 
 }
