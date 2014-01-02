@@ -63,9 +63,10 @@ public class RubikModel extends ModelBase {
 					GL11.glRotatef((float) Math.toDegrees(rotation.getAngle()), axis.getX(), axis.getY(), axis.getZ());
 					
 					int tempAngle = Math.abs(tempRotation.dot(new Vector3i(1, 1, 1)));
-					Vector3f tempAxis = rotation.transpose().mult(tempRotation.normalize());
-				
-					GL11.glRotatef(tempAngle, tempAxis.x, tempAxis.y, tempAxis.z);
+					if (tempAngle != 0) {
+						Vector3f tempAxis = rotation.transpose().mult(tempRotation.normalize());
+						GL11.glRotatef(tempAngle, tempAxis.x, tempAxis.y, tempAxis.z);
+					}
 
 					GL11.glCallList(this.displayList);
 					GL11.glPopMatrix();
@@ -90,7 +91,7 @@ public class RubikModel extends ModelBase {
 	public RubikModel(int pps) {
 		this.textureWidth = 64;
 		this.textureHeight = 64;
-		int texY = 0;
+		int texY;
 
 		PIECES_PER_SIDE = pps;
 		PIECES_PER_FACE = pps * pps;
@@ -99,7 +100,7 @@ public class RubikModel extends ModelBase {
 		INT_PIECE_WIDTH = (int) PIECE_WIDTH;
 
 		// TODO offset, texture noise
-		OFFSET = 0.0F;
+		OFFSET = (PIECE_WIDTH - INT_PIECE_WIDTH) / 2.0F;
 
 		pieces = new PieceRenderer[PIECES_PER_SIDE][PIECES_PER_SIDE][PIECES_PER_SIDE];
 
@@ -137,10 +138,7 @@ public class RubikModel extends ModelBase {
 		}
 	}
 
-	int i = 0;
-
 	public void render(RubikTileEntity rubik, float scale) {
-
 		for (int x = 0; x < pieces.length; x++) {
 			for (int y = 0; y < pieces.length; y++) {
 				for (int z = 0; z < pieces.length; z++) {
@@ -154,7 +152,7 @@ public class RubikModel extends ModelBase {
 		for (int x = 0; x < pieces.length; x++) {
 			for (int y = 0; y < pieces.length; y++) {
 				for (int z = 0; z < pieces.length; z++) {
-					pieces[x][y][z].renderWithRotation(scale, (new Matrix3i().setIdentity()), new Vector3i());
+					pieces[x][y][z].renderWithRotation(scale, new Matrix3i().setIdentity(), new Vector3i());
 				}
 			}
 		}

@@ -1,6 +1,7 @@
 package moddingExperiments.blocks;
 
 import moddingExperiments.config.ConfigurationHandler;
+import moddingExperiments.items.Items;
 import moddingExperiments.lib.BlockInfo;
 import moddingExperiments.lib.ModInfo;
 import moddingExperiments.tileEntities.RubikTileEntity;
@@ -51,7 +52,7 @@ public class RubikBlock extends BlockContainer {
 
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
-		if (!world.isRemote) {
+		if (!world.isRemote && player.getCurrentEquippedItem().itemID != Items.scramblerItem.itemID ) {
 			TileEntity te = world.getBlockTileEntity(x, y, z);
 			if (te instanceof RubikTileEntity) {
 				// TODO change setMove thing
@@ -72,7 +73,7 @@ public class RubikBlock extends BlockContainer {
 	public TileEntity createNewTileEntity(World world) {
 		return new RubikTileEntity(2);
 	}
-
+	
 	@Override
 	public TileEntity createTileEntity(World world, int metadata) {
 		int pps = Math.min(metadata + 2, ConfigurationHandler.MAX_SIZE);
