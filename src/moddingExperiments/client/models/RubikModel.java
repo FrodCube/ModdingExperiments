@@ -61,10 +61,11 @@ public class RubikModel extends ModelBase {
 
 					Vector3f axis = rotation.getAxis();
 					GL11.glRotatef((float) Math.toDegrees(rotation.getAngle()), axis.getX(), axis.getY(), axis.getZ());
-
-					GL11.glRotatef(tempRotation.getX(), 1.0F, 0.0F, 0.0F);
-					GL11.glRotatef(tempRotation.getY(), 0.0F, 1.0F, 0.0F);
-					GL11.glRotatef(tempRotation.getZ(), 0.0F, 0.0F, 1.0F);
+					
+					int tempAngle = Math.abs(tempRotation.dot(new Vector3i(1, 1, 1)));
+					Vector3f tempAxis = rotation.transpose().mult(tempRotation.normalize());
+				
+					GL11.glRotatef(tempAngle, tempAxis.x, tempAxis.y, tempAxis.z);
 
 					GL11.glCallList(this.displayList);
 					GL11.glPopMatrix();
@@ -97,7 +98,7 @@ public class RubikModel extends ModelBase {
 		PIECE_WIDTH = BLOCK_SIZE / PIECES_PER_SIDE;
 		INT_PIECE_WIDTH = (int) PIECE_WIDTH;
 
-		//TODO offset
+		// TODO offset, texture noise
 		OFFSET = 0.0F;
 
 		pieces = new PieceRenderer[PIECES_PER_SIDE][PIECES_PER_SIDE][PIECES_PER_SIDE];
@@ -147,41 +148,6 @@ public class RubikModel extends ModelBase {
 				}
 			}
 		}
-
-		// i++;
-		//
-		// Vector3i r1 = new Vector3i(90, 0, 0);
-		// Vector3i r3 = new Vector3i(0, 0, 90);
-		// Vector3i r4 = new Vector3i(0, 0, -90);
-		//
-		// Matrix3i m = new Matrix3i(1, 0, 0, 0, 1, 0, 0, 0, 1);
-		// Vector3i v = new Vector3i(0, 0, 0);
-		//
-		// Matrix3i m1 = m.rotate(r1);
-		// m1 = m1.rotate(r1);
-		// Matrix3i m2 = m.rotate(r3);
-		// Matrix3i m3 = m1.rotate(r3);
-		//
-		// Matrix3i m4 = m1.rotate(r4);
-		//
-		// if (i% 2500 == 0) {
-		// i = 0;
-		// System.out.println("****");
-		// System.out.println(m.toString());
-		// System.out.println(m.rotate(r1).toString());
-		// System.out.println(m1.toString());
-		// System.out.println(m3.toString());
-		// System.out.println(m4.toString());
-		// }
-		//
-		// pieces[0][0][0].renderWithRotation(scale, m1, v);
-		// pieces[1][0][0].renderWithRotation(scale, m2, v);
-		// pieces[0][1][0].renderWithRotation(scale, m1, v);
-		// pieces[1][1][0].renderWithRotation(scale, m2, v);
-		// pieces[0][0][1].renderWithRotation(scale, m3, v);
-		// pieces[1][1][1].renderWithRotation(scale, m, v);
-		// pieces[0][1][1].renderWithRotation(scale, m3, v);
-		// pieces[1][0][1].renderWithRotation(scale, m, v);
 	}
 
 	public void render(float scale) {

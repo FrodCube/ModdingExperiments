@@ -58,9 +58,6 @@ public class RubikBlock extends BlockContainer {
 				if (side == 1) {
 					((RubikTileEntity) te).printCube();
 					return true;
-				} else if (side == 0) {
-					((RubikTileEntity) te).clearCube();
-					return true;
 				}
 
 				if (((RubikTileEntity) te).setMove(side, false)) {

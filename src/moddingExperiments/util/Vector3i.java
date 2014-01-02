@@ -1,5 +1,7 @@
 package moddingExperiments.util;
 
+import org.lwjgl.util.vector.Vector3f;
+
 import net.minecraftforge.common.ForgeDirection;
 
 public class Vector3i {
@@ -35,12 +37,16 @@ public class Vector3i {
 	public Vector3i scalarMult(int a) {
 		return new Vector3i(a * this.x, a * this.y, a * this.z);
 	}
+	
+	public Vector3i mult(Vector3i a) {
+		return new Vector3i(a.getX() * this.x, a.getY() * this.y, a.getZ() * this.z);
+	}
 
 	public Vector3i negate() {
 		return scalarMult(-1);
 	}
 
-	public double dot(Vector3i v) {
+	public int dot(Vector3i v) {
 		return this.x * v.x + this.y * v.y + this.z * v.z;
 	}
 
@@ -50,6 +56,11 @@ public class Vector3i {
 
 	public double length() {
 		return Math.sqrt(this.length2());
+	}
+	
+	public Vector3f normalize() {
+		float l = (float) length();
+		return new Vector3f(x / l, y / l, z / l);
 	}
 
 	public Vector3i cross(Vector3i v) {

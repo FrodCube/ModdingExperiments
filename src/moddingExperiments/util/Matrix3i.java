@@ -28,6 +28,25 @@ public class Matrix3i {
 		return this;
 	}
 
+	public Matrix3i transpose() {
+		Matrix3i result = new Matrix3i(aa, ab, ac, ba, bb, bc, ca, cb, cc);
+		int temp;
+
+		temp = result.ab;
+		result.ab = result.ba;
+		result.ba = temp;
+
+		temp = result.ac;
+		result.ac = result.ca;
+		result.ca = temp;
+
+		temp = result.bc;
+		result.bc = result.cb;
+		result.cb = temp;
+
+		return result;
+	}
+
 	public Matrix3i mult(Matrix3i m) {
 		Matrix3i result = new Matrix3i();
 
@@ -42,6 +61,16 @@ public class Matrix3i {
 		result.ca = ca * m.aa + cb * m.ba + cc * m.ca;
 		result.cb = ca * m.ab + cb * m.bb + cc * m.cb;
 		result.cc = ca * m.ac + cb * m.bc + cc * m.cc;
+		return result;
+	}
+
+	public Vector3f mult(Vector3f v) {
+		Vector3f result = new Vector3f();
+
+		result.x = Vector3f.dot(v, new Vector3f(aa, ab, ac));
+		result.y = Vector3f.dot(v, new Vector3f(ba, bb, bc));
+		result.z = Vector3f.dot(v, new Vector3f(ca, cb, cc));
+
 		return result;
 	}
 
@@ -69,11 +98,11 @@ public class Matrix3i {
 		} else if (angles.getZ() != 0) {
 			rotation.cc = 1;
 			if (angles.getZ() > 0) {
-				rotation.ab = 1;
-				rotation.ba = -1;
-			} else {
 				rotation.ab = -1;
 				rotation.ba = 1;
+			} else {
+				rotation.ab = 1;
+				rotation.ba = -1;
 			}
 		} else {
 			rotation.setIdentity();

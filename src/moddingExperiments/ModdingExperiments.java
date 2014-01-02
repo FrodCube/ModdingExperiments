@@ -29,6 +29,8 @@ public class ModdingExperiments {
 	@SidedProxy(clientSide = "moddingExperiments.proxy.ClientProxy", serverSide = "moddingExperiments.proxy.CommonProxy")
 	public static CommonProxy proxy;
 	
+	//TODO achievements, scrambler, solver
+	
 	@EventHandler
     public void preInit(FMLPreInitializationEvent e) {
         ConfigurationHandler.init(e.getSuggestedConfigurationFile());
