@@ -65,8 +65,7 @@ public class RubikBlock extends BlockContainer {
 			int pps = rubik.piecesPerSide;
 			double pieceWidth = 1.0 / pps;
 			
-			// TODO front based on position , not angle (change eventHandler too!)
-			int front = (MathHelper.floor_double((double) (player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 1;
+			int front = ((MathHelper.floor_double((Math.toDegrees(Math.atan2(z + 0.5 - player.posZ, x + 0.5 - player.posX)) - 45) * 4.0 / 360.0)) & 3) + 1;
 			front = front == 1 ? 2 : (front == 2 ? 5 : front);
 
 			int axis;

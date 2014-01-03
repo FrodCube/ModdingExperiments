@@ -20,16 +20,16 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class RubikEventHandler {
-	
+
 	public static final float GLOW_TIME = 350;
-	
+
 	private boolean increasing = true;
 	private int glow;
 
 	@ForgeSubscribe
 	public void onDrawBlockHighlightEvent(DrawBlockHighlightEvent event) {
 		Minecraft minecraft = FMLClientHandler.instance().getClient();
-		if (Minecraft.isGuiEnabled() /*&& minecraft.inGameHasFocus*/) {
+		if (Minecraft.isGuiEnabled() /* && minecraft.inGameHasFocus */) {
 			if (event.target.typeOfHit == EnumMovingObjectType.TILE) {
 				if (event.player.worldObj.getBlockId(event.target.blockX, event.target.blockY, event.target.blockZ) == Blocks.rubik.blockID) {
 					TileEntity te = event.player.worldObj.getBlockTileEntity(event.target.blockX, event.target.blockY, event.target.blockZ);
@@ -61,8 +61,14 @@ public class RubikEventHandler {
 		double hitY = pieceWidth * (int) ((event.target.hitVec.yCoord - y) / pieceWidth);
 		double hitZ = pieceWidth * (int) ((event.target.hitVec.zCoord - z) / pieceWidth);
 
-		int front = (MathHelper.floor_double((double) (event.player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 1;
+		// int front = (MathHelper.floor_double((double)
+		// (event.player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 1;
+		// front = front == 1 ? 2 : (front == 2 ? 5 : front);
+
+		int front = ((MathHelper.floor_double((Math.toDegrees(Math.atan2(z + 0.5 - playerZ, x + 0.5 - playerX)) - 45) * 4.0 / 360.0)) & 3) + 1;
 		front = front == 1 ? 2 : (front == 2 ? 5 : front);
+
+		System.out.println(Math.toDegrees(Math.atan2(z + 0.5 - playerZ, x + 0.5 - playerX)) + " " + front + " " + face);
 
 		GL11.glPushMatrix();
 		GL11.glScaled(0.99, 0.99, 0.99);
@@ -97,8 +103,8 @@ public class RubikEventHandler {
 	}
 
 	private void drawBox(double width) {
-		//TODO config option
-		glow += increasing? 6 : -6;
+		// TODO config option
+		glow += increasing ? 6 : -6;
 		if (glow >= GLOW_TIME) {
 			glow = (int) GLOW_TIME;
 			increasing = false;
@@ -107,7 +113,7 @@ public class RubikEventHandler {
 			increasing = true;
 		}
 		float progress = glow / GLOW_TIME;
-		
+
 		Tessellator tessellator = Tessellator.instance;
 		GL11.glColor4f(1, 1, 1, 0.1F + progress * 0.1F);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
