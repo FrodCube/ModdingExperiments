@@ -1,7 +1,9 @@
 package moddingExperiments.items;
 
-import cpw.mods.fml.common.FMLCommonHandler;
+import java.util.List;
+
 import moddingExperiments.blocks.Blocks;
+import moddingExperiments.creativeTabs.Tabs;
 import moddingExperiments.lib.ItemInfo;
 import moddingExperiments.tileEntities.RubikTileEntity;
 import net.minecraft.creativetab.CreativeTabs;
@@ -15,20 +17,36 @@ public class ScramblerItem extends Item {
 
 	public ScramblerItem(int id) {
 		super(id);
-		setCreativeTab(CreativeTabs.tabMisc);
+		setCreativeTab(Tabs.rubikCreativeTab);
 		setUnlocalizedName(ItemInfo.SCRAMBLER_ITEM_UNLOCALIZED);
+		setHasSubtypes(true);
 		setMaxStackSize(1);
 	}
-	
+
+	@Override
+	public String getUnlocalizedName(ItemStack stack) {
+		return ItemInfo.SCRAMBLER_ITEM_UNLOCALIZED + stack.getItemDamage();
+	}
+
+	@Override
+	public void getSubItems(int id, CreativeTabs tab, List list) {
+		list.add(new ItemStack(id, 1, 0));
+		list.add(new ItemStack(id, 1, 1));
+	}
+
 	@Override
 	public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
 		if (!world.isRemote && world.getBlockId(x, y, z) == Blocks.rubik.blockID) {
 			TileEntity te = world.getBlockTileEntity(x, y, z);
 			if (te instanceof RubikTileEntity) {
-				((RubikTileEntity) te).scramble();
+				if (stack.getItemDamage() == 0) {
+					((RubikTileEntity) te).scramble();
+				} else if (stack.getItemDamage() == 1) {
+					((RubikTileEntity) te).solve();
+				}
 			}
 		}
-		
+
 		return false;
 	}
 

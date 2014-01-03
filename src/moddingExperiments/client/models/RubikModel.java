@@ -47,7 +47,7 @@ public class RubikModel extends ModelBase {
 		}
 
 		@SideOnly(Side.CLIENT)
-		public void renderWithRotation(float scale, Matrix3i rotation, Vector3i tempRotation) {
+		public void renderWithRotation(float scale, Matrix3i rotation, Vector3i tempRotation, float solveProgress) {
 			if (!this.isHidden) {
 				if (this.showModel) {
 					if (!this.compiled) {
@@ -57,9 +57,15 @@ public class RubikModel extends ModelBase {
 					GL11.glPushMatrix();
 					GL11.glTranslatef(this.rotationPointX * scale, this.rotationPointY * scale, this.rotationPointZ * scale);
 
-					Vector3f axis = rotation.getAxis();
-					GL11.glRotatef((float) Math.toDegrees(rotation.getAngle()), axis.getX(), axis.getY(), axis.getZ());
-					
+					float angle = rotation.getAngle();
+					if (angle != 0) {
+						System.out.println("model " + solveProgress);
+						angle = (float) Math.toDegrees(angle);
+						angle *= solveProgress;
+						Vector3f axis = rotation.getAxis();	
+						GL11.glRotatef(angle, axis.getX(), axis.getY(), axis.getZ());
+					}
+
 					int tempAngle = Math.abs(tempRotation.dot(new Vector3i(1, 1, 1)));
 					if (tempAngle != 0) {
 						Vector3f tempAxis = rotation.transpose().mult(tempRotation.normalize());
@@ -83,13 +89,13 @@ public class RubikModel extends ModelBase {
 	public final float OFFSET;
 
 	PieceRenderer[][][] pieces;
-	
+
 	int texY;
 
 	public RubikModel(int pps) {
 		this.textureWidth = 64;
 		this.textureHeight = 64;
-		
+
 		PIECES_PER_SIDE = pps;
 		PIECES_PER_FACE = pps * pps;
 		PIECES_PER_CUBE = pps * pps * pps;
@@ -138,7 +144,7 @@ public class RubikModel extends ModelBase {
 		for (int x = 0; x < pieces.length; x++) {
 			for (int y = 0; y < pieces.length; y++) {
 				for (int z = 0; z < pieces.length; z++) {
-					pieces[x][y][z].renderWithRotation(scale, rubik.getRotation(x, y, z), rubik.getTempRotation(x, y, z));
+					pieces[x][y][z].renderWithRotation(scale, rubik.getRotation(x, y, z), rubik.getTempRotation(x, y, z), rubik.getSolveProgress());
 				}
 			}
 		}
@@ -148,7 +154,7 @@ public class RubikModel extends ModelBase {
 		for (int x = 0; x < pieces.length; x++) {
 			for (int y = 0; y < pieces.length; y++) {
 				for (int z = 0; z < pieces.length; z++) {
-					pieces[x][y][z].renderWithRotation(scale, new Matrix3i().setIdentity(), new Vector3i());
+					pieces[x][y][z].renderWithRotation(scale, new Matrix3i().setIdentity(), new Vector3i(), 0);
 				}
 			}
 		}

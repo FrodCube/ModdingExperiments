@@ -68,8 +68,6 @@ public class RubikEventHandler {
 		int front = ((MathHelper.floor_double((Math.toDegrees(Math.atan2(z + 0.5 - playerZ, x + 0.5 - playerX)) - 45) * 4.0 / 360.0)) & 3) + 1;
 		front = front == 1 ? 2 : (front == 2 ? 5 : front);
 
-		System.out.println(Math.toDegrees(Math.atan2(z + 0.5 - playerZ, x + 0.5 - playerX)) + " " + front + " " + face);
-
 		GL11.glPushMatrix();
 		GL11.glScaled(0.99, 0.99, 0.99);
 		GL11.glTranslated(x - playerX + 0.5, y - playerY + 0.5, z - playerZ + 0.5);

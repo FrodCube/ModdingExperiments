@@ -27,7 +27,8 @@ public class Items {
 			LanguageRegistry.addName(new ItemStack(rubikItem.itemID, 1, i), (i + 2) + "x" + (i + 2) + " " + ItemInfo.RUBIK_ITEM_NAME);
 		}
 		
-		LanguageRegistry.addName(scramblerItem, ItemInfo.SCRAMBLER_ITEM_NAME);
+		LanguageRegistry.addName(new ItemStack(scramblerItem.itemID, 1, 0), ItemInfo.SCRAMBLER_ITEM_NAME);
+		LanguageRegistry.addName(new ItemStack(scramblerItem.itemID, 1, 1), ItemInfo.SOLVER_ITEM_NAME);
 	}
 
 	public static void registerRecipies() {

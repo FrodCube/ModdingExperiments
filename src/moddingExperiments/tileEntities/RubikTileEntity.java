@@ -54,6 +54,8 @@ public class RubikTileEntity extends TileEntity {
 	public static final float SPEED = 11F;
 	public static final int TOTAL_ANGLE = 90;
 	public static final int ANGLE = (int) (TOTAL_ANGLE / SPEED);
+	public static final int SOLVE_DURATION = 200;
+	public static final int SOLVE_SPEED = 4;
 
 	public int piecesPerSide;
 	private Vector3i[][][] cube;
@@ -65,6 +67,8 @@ public class RubikTileEntity extends TileEntity {
 	private int tempAngle;
 	private boolean scrambled; // TODO save these to NBT
 	private boolean scrambling;
+	private boolean solving;
+	private int solveProgress;
 	private int scrambleCounter;
 	private String playerName;
 
@@ -72,10 +76,14 @@ public class RubikTileEntity extends TileEntity {
 	private RubikModel model;
 
 	public RubikTileEntity(int pps) {
+		//TODO constructor error
 		move = NO_MOVE;
 		prevMove = NO_MOVE;
 		scrambleCounter = 0;
+		solveProgress = 0;
 		scrambling = false;
+		scrambled = false;
+		solving = false;
 		piecesPerSide = pps;
 		newCube(pps);
 	}
@@ -101,23 +109,39 @@ public class RubikTileEntity extends TileEntity {
 
 	@Override
 	public void updateEntity() {
-		if (move == NO_MOVE) {
-			if (!worldObj.isRemote && scrambling) {
-				if (scrambleCounter == ConfigurationHandler.SCRAMBLE_LENGTH) {
-					scrambling = false;
-					prevMove = NO_MOVE;
-					scrambleCounter = 0;
-				} else {
-					Random random = new Random();
-					scrambleCounter++;
-					int randomMove;
-					do {
-						randomMove = random.nextInt(3 * piecesPerSide);
-					} while (randomMove == prevMove);
-
-					prevMove = randomMove;
-					setMove(randomMove, random.nextBoolean(), "");
+		if (solving) {
+			System.out.println(solveProgress + " " + getSolveProgress());
+			if (solveProgress >= SOLVE_DURATION) {
+				solving = false;
+				solveProgress = 0;
+				if (!worldObj.isRemote) {
+					newCube(piecesPerSide);
 					worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+				}
+
+			}
+			solveProgress += SOLVE_SPEED;
+		}
+
+		if (move == NO_MOVE) {
+			if (!worldObj.isRemote) {
+				if (scrambling) {
+					if (scrambleCounter == ConfigurationHandler.SCRAMBLE_LENGTH) {
+						scrambling = false;
+						prevMove = NO_MOVE;
+						scrambleCounter = 0;
+					} else {
+						Random random = new Random();
+						scrambleCounter++;
+						int randomMove;
+						do {
+							randomMove = random.nextInt(3 * piecesPerSide);
+						} while (randomMove == prevMove);
+
+						prevMove = randomMove;
+						setMove(randomMove, random.nextBoolean(), "");
+						worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+					}
 				}
 			}
 		} else {
@@ -134,16 +158,12 @@ public class RubikTileEntity extends TileEntity {
 	}
 
 	private boolean updateMoveProgress() {
-		// TODO Support for all sizes up to 16x16 (metadata = size)
-		// System.out.println(worldObj.isRemote ? "Client" : "Server");
 		int pps = piecesPerSide;
 		int axis = move / pps;
 		tempAngle += ANGLE;
 		int ang = (tempAngle + ANGLE) >= TOTAL_ANGLE ? TOTAL_ANGLE : tempAngle;
 		if (!clockwise)
 			ang *= -1;
-		// System.out.println("TEMPANGLE: " + tempAngle + " ANGLE: " + ang +
-		// " FACE NUMBER " + face.length);
 		for (int a = 0; a < pps; a++) {
 			for (int b = 0; b < pps; b++) {
 				Vector3i coords = face[a][b];
@@ -292,7 +312,7 @@ public class RubikTileEntity extends TileEntity {
 						break;
 
 				}
-				
+
 				scrambled = false;
 			}
 		}
@@ -300,17 +320,19 @@ public class RubikTileEntity extends TileEntity {
 	}
 
 	private boolean isSolved() {
-		Matrix3i id = new Matrix3i().setIdentity();
+		//TODO fix solved check to include not oriented centers
+		//TODO particles?
 		for (int x = 0; x < piecesPerSide; x++) {
 			for (int y = 0; y < piecesPerSide; y++) {
 				for (int z = 0; z < piecesPerSide; z++) {
-					if (!pieces[x][y][z].rotation.equals(id)) {
+					if (!pieces[x][y][z].rotation.equals(pieces[0][0][0].rotation)) {
+						Minecraft.getMinecraft().thePlayer.addChatMessage("Not solved. Fail at " + new Vector3i(x, y, z));
 						return false;
 					}
 				}
 			}
 		}
-		
+
 		//TODO fix weird achievement rendering
 		Minecraft.getMinecraft().thePlayer.addChatMessage("cube solved " + piecesPerSide);
 
@@ -332,6 +354,9 @@ public class RubikTileEntity extends TileEntity {
 		tag.setBoolean("clockwise", clockwise);
 		tag.setInteger("tempAngle", tempAngle);
 		tag.setByte("piecesPerSide", (byte) piecesPerSide);
+
+		tag.setBoolean("solving", solving);
+
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
 				for (int z = 0; z < pps; z++) {
@@ -370,6 +395,8 @@ public class RubikTileEntity extends TileEntity {
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
 
+		//TODO different NBT read/write for packets or save game
+
 		int pps = piecesPerSide = tag.getByte("piecesPerSide");
 		// TODO read and save pps from nbt
 		pieces = new Piece[pps][pps][pps];
@@ -393,12 +420,14 @@ public class RubikTileEntity extends TileEntity {
 		move = tag.getByte("move");
 		clockwise = tag.getBoolean("clockwise");
 		tempAngle = tag.getInteger("tempAngle");
+
+		solving = tag.getBoolean("solving");
 	}
 
 	int tempMove = -1;
 
 	public boolean setMove(int i, boolean clock, String player) {
-		if (move != NO_MOVE || (scrambling && !player.equalsIgnoreCase("")))
+		if (move != NO_MOVE || solving || (scrambling && !player.equalsIgnoreCase("")))
 			return false;
 		this.move = i;
 		this.clockwise = clock;
@@ -411,10 +440,18 @@ public class RubikTileEntity extends TileEntity {
 	}
 
 	public void scramble() {
-		if (!scrambling) {
+		if (move == NO_MOVE && !scrambling && !solving) {
 			System.out.println("started scrambling");
 			scrambling = true;
 			scrambled = true;
+		}
+	}
+
+	public void solve() {
+		if (move == NO_MOVE && !solving && !scrambling) {
+			scrambled = false;
+			solving = true;
+			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 		}
 	}
 
@@ -452,4 +489,9 @@ public class RubikTileEntity extends TileEntity {
 	public RubikModel getModel() {
 		return model;
 	}
+
+	public float getSolveProgress() {
+		return 1 - ((float) solveProgress / (float) SOLVE_DURATION);
+	}
+
 }

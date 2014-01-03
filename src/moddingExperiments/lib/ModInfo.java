@@ -7,4 +7,6 @@ public class ModInfo {
 	public static final String NAME = "Modding Experiments";
 	public static final String CHANNEL = "ModdingExp";
 	public static final String TEXTURE_FOLDER = "moddingexperiments";
+	
+	public static final String TAB_NAME = "Rubik's Cubes";
 }

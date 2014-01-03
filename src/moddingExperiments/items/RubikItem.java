@@ -4,21 +4,20 @@ import java.util.List;
 
 import moddingExperiments.blocks.Blocks;
 import moddingExperiments.config.ConfigurationHandler;
+import moddingExperiments.creativeTabs.Tabs;
 import moddingExperiments.lib.ItemInfo;
-import moddingExperiments.tileEntities.RubikTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 public class RubikItem extends Item {
 
 	public RubikItem(int id) {
 		super(id);
-		setCreativeTab(CreativeTabs.tabMisc);
+		setCreativeTab(Tabs.rubikCreativeTab);
 		setUnlocalizedName(ItemInfo.RUBIK_ITEM_UNLOCALIZED);
 		setHasSubtypes(true);
 		setMaxStackSize(64);

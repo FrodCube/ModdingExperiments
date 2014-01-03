@@ -21,6 +21,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class RubikBlock extends BlockContainer {
 
 	public RubikBlock(int id, Material material) {
+		//TODO fix pick block
 		super(id, material);
 		setHardness(1.25F);
 		setResistance(7.0F);

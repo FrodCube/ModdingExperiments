@@ -4,12 +4,15 @@ import moddingExperiments.achievements.Achievements;
 import moddingExperiments.blocks.Blocks;
 import moddingExperiments.client.core.RubikEventHandler;
 import moddingExperiments.config.ConfigurationHandler;
+import moddingExperiments.creativeTabs.RubikCreativeTab;
+import moddingExperiments.creativeTabs.Tabs;
 import moddingExperiments.entities.Entities;
 import moddingExperiments.items.Items;
 import moddingExperiments.lib.AchievementInfo;
 import moddingExperiments.lib.ModInfo;
 import moddingExperiments.network.PacketHandler;
 import moddingExperiments.proxy.CommonProxy;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.common.AchievementPage;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Mod;
@@ -44,6 +47,8 @@ public class ModdingExperiments {
 
 	@EventHandler
 	public void load(FMLInitializationEvent e) {
+		Tabs.init();
+		
 		Blocks.init();
 		Items.init();
 		Entities.init();
