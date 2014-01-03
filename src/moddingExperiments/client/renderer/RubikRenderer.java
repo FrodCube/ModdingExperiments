@@ -22,6 +22,7 @@ public class RubikRenderer extends TileEntitySpecialRenderer {
 
 	public void renderRubik(RubikTileEntity rubik, double x, double y, double z, float partialTickTime) {
 		this.model = rubik.getModel();
+		GL11.glDisable(GL11.GL_CULL_FACE);
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) x, (float) y, (float) z);
 		GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
@@ -32,6 +33,7 @@ public class RubikRenderer extends TileEntitySpecialRenderer {
 		model.render(rubik, 0.0625F);
 
 		GL11.glPopMatrix();
+		GL11.glEnable(GL11.GL_CULL_FACE);
 	}
 
 }

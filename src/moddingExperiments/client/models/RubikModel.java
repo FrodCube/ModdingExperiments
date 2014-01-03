@@ -54,8 +54,6 @@ public class RubikModel extends ModelBase {
 						this.compileDisplayList(scale);
 					}
 
-					GL11.glDisable(GL11.GL_CULL_FACE);
-
 					GL11.glPushMatrix();
 					GL11.glTranslatef(this.rotationPointX * scale, this.rotationPointY * scale, this.rotationPointZ * scale);
 
@@ -70,8 +68,6 @@ public class RubikModel extends ModelBase {
 
 					GL11.glCallList(this.displayList);
 					GL11.glPopMatrix();
-
-					GL11.glEnable(GL11.GL_CULL_FACE);
 				}
 			}
 		}
@@ -87,19 +83,19 @@ public class RubikModel extends ModelBase {
 	public final float OFFSET;
 
 	PieceRenderer[][][] pieces;
+	
+	int texY;
 
 	public RubikModel(int pps) {
 		this.textureWidth = 64;
 		this.textureHeight = 64;
-		int texY;
-
+		
 		PIECES_PER_SIDE = pps;
 		PIECES_PER_FACE = pps * pps;
 		PIECES_PER_CUBE = pps * pps * pps;
 		PIECE_WIDTH = BLOCK_SIZE / PIECES_PER_SIDE;
 		INT_PIECE_WIDTH = (int) PIECE_WIDTH;
 
-		// TODO offset, texture noise
 		OFFSET = (PIECE_WIDTH - INT_PIECE_WIDTH) / 2.0F;
 
 		pieces = new PieceRenderer[PIECES_PER_SIDE][PIECES_PER_SIDE][PIECES_PER_SIDE];

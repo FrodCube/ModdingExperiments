@@ -24,9 +24,6 @@ public class RubikBlock extends BlockContainer {
 		setResistance(7.0F);
 		setStepSound(Block.soundStoneFootstep);
 		setUnlocalizedName(BlockInfo.RUBIK_UNLOCALIZED);
-		
-		//TODO remove this
-		setCreativeTab(CreativeTabs.tabMisc);
 	}
 
 	@Override
@@ -52,20 +49,27 @@ public class RubikBlock extends BlockContainer {
 
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
-		if (!world.isRemote && player.getCurrentEquippedItem().itemID != Items.scramblerItem.itemID ) {
-			TileEntity te = world.getBlockTileEntity(x, y, z);
-			if (te instanceof RubikTileEntity) {
-				// TODO change setMove thing
-				if (side == 1) {
-					((RubikTileEntity) te).printCube();
-					return true;
-				}
+		if (world.isRemote) {
+			return true;
+		}
+		
+		if (player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().itemID == Items.scramblerItem.itemID) {
+			return true;
+		}
+		
+		TileEntity te = world.getBlockTileEntity(x, y, z);
+		if (te instanceof RubikTileEntity) {
+			// TODO change setMove thing
+			if (side == 1) {
+				((RubikTileEntity) te).printCube();
+				return true;
+			}
 
-				if (((RubikTileEntity) te).setMove(side, false)) {
-					world.markBlockForUpdate(x, y, z);
-				}
+			if (((RubikTileEntity) te).setMove(side, false)) {
+				world.markBlockForUpdate(x, y, z);
 			}
 		}
+
 		return true;
 	}
 
@@ -73,7 +77,7 @@ public class RubikBlock extends BlockContainer {
 	public TileEntity createNewTileEntity(World world) {
 		return new RubikTileEntity(2);
 	}
-	
+
 	@Override
 	public TileEntity createTileEntity(World world, int metadata) {
 		int pps = Math.min(metadata + 2, ConfigurationHandler.MAX_SIZE);
