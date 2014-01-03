@@ -4,6 +4,7 @@ import java.util.Random;
 
 import moddingExperiments.achievements.Achievements;
 import moddingExperiments.client.models.RubikModel;
+import moddingExperiments.client.sound.Sounds;
 import moddingExperiments.config.ConfigurationHandler;
 import moddingExperiments.util.Matrix3i;
 import moddingExperiments.util.Vector3i;
@@ -404,6 +405,8 @@ public class RubikTileEntity extends TileEntity {
 		this.playerName = player;
 		getFace();
 		Minecraft.getMinecraft().thePlayer.addChatMessage("MOVE: " + move + (clockwise ? " clockwise" : " anticlockwise"));
+
+		Sounds.CUBE_0.playMultiSound(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, 1, 1);
 		return true;
 	}
 

@@ -39,6 +39,7 @@ public class ModdingExperiments {
 		ConfigurationHandler.init(e.getSuggestedConfigurationFile());
 		proxy.initRenderers();
 		proxy.initSounds();
+		proxy.registerHandlers();
 	}
 
 	@EventHandler
@@ -59,8 +60,6 @@ public class ModdingExperiments {
 		
 		achievementPage = new AchievementPage(AchievementInfo.PAGE_NAME, Achievements.pocketCube, Achievements.rubikCube, Achievements.revengeCube, Achievements.professorCube);
 		AchievementPage.registerAchievementPage(achievementPage);
-
-		MinecraftForge.EVENT_BUS.register(new RubikEventHandler());
 	}
 
 }
