@@ -1,40 +1,49 @@
 package moddingExperiments.client.core;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.Vector3f;
-
 import moddingExperiments.blocks.Blocks;
 import moddingExperiments.config.ConfigurationHandler;
-import moddingExperiments.tileEntities.RubikTileEntity.Piece;
+import moddingExperiments.items.Items;
+import moddingExperiments.tileEntities.RubikTileEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumMovingObjectType;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
-import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.event.ForgeSubscribe;
+
+import org.lwjgl.opengl.GL11;
+
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class RubikEventHandler {
+	
+	public static final float GLOW_TIME = 350;
+	
+	private boolean increasing = true;
+	private int glow;
 
 	@ForgeSubscribe
 	public void onDrawBlockHighlightEvent(DrawBlockHighlightEvent event) {
 		Minecraft minecraft = FMLClientHandler.instance().getClient();
-		if (Minecraft.isGuiEnabled() && minecraft.inGameHasFocus) {
+		if (Minecraft.isGuiEnabled() /*&& minecraft.inGameHasFocus*/) {
 			if (event.target.typeOfHit == EnumMovingObjectType.TILE) {
 				if (event.player.worldObj.getBlockId(event.target.blockX, event.target.blockY, event.target.blockZ) == Blocks.rubik.blockID) {
-					drawFaceSelector(event);
+					TileEntity te = event.player.worldObj.getBlockTileEntity(event.target.blockX, event.target.blockY, event.target.blockZ);
+					if (te instanceof RubikTileEntity) {
+						drawFaceSelector((RubikTileEntity) te, event);
+					}
+
 				}
 			}
 
 		}
 	}
 
-	private void drawFaceSelector(DrawBlockHighlightEvent event) {
+	private void drawFaceSelector(RubikTileEntity rubik, DrawBlockHighlightEvent event) {
 		double playerX = event.player.prevPosX + (event.player.posX - event.player.prevPosX) * event.partialTicks;
 		double playerY = event.player.prevPosY + (event.player.posY - event.player.prevPosY) * event.partialTicks;
 		double playerZ = event.player.prevPosZ + (event.player.posZ - event.player.prevPosZ) * event.partialTicks;
@@ -52,8 +61,6 @@ public class RubikEventHandler {
 		double hitY = pieceWidth * (int) ((event.target.hitVec.yCoord - y) / pieceWidth);
 		double hitZ = pieceWidth * (int) ((event.target.hitVec.zCoord - z) / pieceWidth);
 
-		// TODO rotation f(front)
-
 		int front = (MathHelper.floor_double((double) (event.player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 1;
 		front = front == 1 ? 2 : (front == 2 ? 5 : front);
 
@@ -61,62 +68,48 @@ public class RubikEventHandler {
 		GL11.glScaled(0.99, 0.99, 0.99);
 		GL11.glTranslated(x - playerX + 0.5, y - playerY + 0.5, z - playerZ + 0.5);
 
-		if (face == 0 || face == 1) {
-			int angle = -90 * (int) (((event.player.rotationYaw - 45) / 90) % 4);
-			GL11.glRotatef(angle, 0, 1, 0);
-
-			double transZ = 0;
-			switch (front) {
-				case 2:
-					transZ = hitX;
-					break;
-				case 3:
-					transZ = 1 - (hitX + pieceWidth);
-					break;
-				case 4:
-					transZ = 1 - (hitZ + pieceWidth);
-					break;
-				case 5:
-					transZ = hitZ;
-					break;
+		if (event.player.getCurrentEquippedItem() == null || event.player.getCurrentEquippedItem().itemID != Items.scramblerItem.itemID) {
+			if (face == 0 || face == 1) {
+				if (front < 4) {
+					GL11.glRotatef(90, 0, 1, 0);
+					GL11.glTranslated(0, 0, hitX);
+				} else {
+					GL11.glTranslated(0, 0, hitZ);
+				}
+			} else if (face == front) {
+				GL11.glRotatef(90, 1, 0, 0);
+				GL11.glTranslated(0, 0, 1 - (hitY + pieceWidth));
+			} else {
+				if (front < 4) {
+					GL11.glTranslated(0, 0, hitZ);
+				} else {
+					GL11.glRotatef(90, 0, 1, 0);
+					GL11.glTranslated(0, 0, hitX);
+				}
 			}
 
-			GL11.glTranslated(0, 0, transZ);
-		} else if (face == front) {
-			GL11.glRotatef(90, 1, 0, 0);
-			GL11.glTranslated(0, 0, 1 - (hitY + pieceWidth));
+			drawBox(pieceWidth);
 		} else {
-			int angle = -90 * (int) ((((event.player.rotationYaw - 45) / 90) + 1) % 4);
-			GL11.glRotatef(angle, 0, 1, 0);
-
-			double transZ = 0;
-			switch (front) {
-				case 2:
-					transZ = hitZ;
-					break;
-				case 3:
-					transZ = 1 - (hitZ + pieceWidth);
-					break;
-				case 4:
-					transZ = hitX;
-					break;
-				case 5:
-
-					transZ = 1 - (hitX + pieceWidth);
-					break;
-			}
-
-			GL11.glTranslated(0, 0, transZ);
+			drawBox(1);
 		}
-
-		drawBox(pieceWidth);
 
 		GL11.glPopMatrix();
 	}
 
 	private void drawBox(double width) {
+		//TODO config option
+		glow += increasing? 6 : -6;
+		if (glow >= GLOW_TIME) {
+			glow = (int) GLOW_TIME;
+			increasing = false;
+		} else if (glow < 0) {
+			glow = 0;
+			increasing = true;
+		}
+		float progress = glow / GLOW_TIME;
+		
 		Tessellator tessellator = Tessellator.instance;
-		GL11.glColor4f(1, 1, 1, 0.25F);
+		GL11.glColor4f(1, 1, 1, 0.1F + progress * 0.1F);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);

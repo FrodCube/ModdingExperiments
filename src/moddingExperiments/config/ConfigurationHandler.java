@@ -2,6 +2,7 @@ package moddingExperiments.config;
 
 import java.io.File;
 
+import moddingExperiments.achievements.Achievements;
 import moddingExperiments.blocks.Blocks;
 import moddingExperiments.items.Items;
 import net.minecraftforge.common.Configuration;
@@ -21,7 +22,8 @@ public class ConfigurationHandler {
 		MAX_SIZE = Math.max(2, Math.min(16, pps));
 		
 		SCRAMBLE_LENGTH = getIntWithComment(config, "Options", "Scramble Length", "The number of random moves made by the random scrambler item", 30);
-
+		
+		Achievements.readAchievementInfoFromConfig(config);
 		Blocks.readBlockInfoFromConfig(config);
 		Items.readItemInfoFromConfig(config);
 

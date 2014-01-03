@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -52,20 +53,57 @@ public class RubikBlock extends BlockContainer {
 		if (world.isRemote) {
 			return true;
 		}
-		
+
 		if (player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().itemID == Items.scramblerItem.itemID) {
 			return true;
 		}
-		
+
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		if (te instanceof RubikTileEntity) {
-			// TODO change setMove thing
-			if (side == 1) {
-				((RubikTileEntity) te).printCube();
-				return true;
+			RubikTileEntity rubik = (RubikTileEntity) te;
+			int pps = rubik.piecesPerSide;
+			double pieceWidth = 1.0 / pps;
+			
+			// TODO front based on position , not angle (change eventHandler too!)
+			int front = (MathHelper.floor_double((double) (player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 1;
+			front = front == 1 ? 2 : (front == 2 ? 5 : front);
+
+			int axis;
+			int slice;
+			boolean clockwise = false;
+			
+			if (side == 0 || side == 1) {
+				if (front < 4) {
+					axis = 2;
+					slice = (int) (hitX / pieceWidth);
+					clockwise = (hitZ > 0.5);
+				} else {
+					axis = 1;
+					slice = (int) ((1 - hitZ) / pieceWidth);
+					clockwise = (hitX > 0.5);
+				}
+			} else if (side == front) {
+				axis = 0;
+				slice = (int) ((1 - hitY) / pieceWidth);
+				if (front < 4) {
+					clockwise = (hitX < 0.5) != (front % 2 == 0);
+				} else {
+					clockwise = (hitZ < 0.5) != (front % 2 == 1);
+				}
+			} else {
+				if (front < 4) {
+					axis = 1;
+					slice = (int) ((1 - hitZ) / pieceWidth);					
+				} else {
+					axis = 2;
+					slice = (int) (hitX / pieceWidth);
+				}
+				clockwise = (hitY < 0.5) != (side % 2 == 0);
 			}
 
-			if (((RubikTileEntity) te).setMove(side, false)) {
+			int move = axis * pps + slice;
+
+			if (rubik.setMove(move, clockwise, player.username)) {
 				world.markBlockForUpdate(x, y, z);
 			}
 		}

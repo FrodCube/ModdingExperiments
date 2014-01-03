@@ -2,6 +2,7 @@ package moddingExperiments.tileEntities;
 
 import java.util.Random;
 
+import moddingExperiments.achievements.Achievements;
 import moddingExperiments.client.models.RubikModel;
 import moddingExperiments.config.ConfigurationHandler;
 import moddingExperiments.util.Matrix3i;
@@ -61,8 +62,10 @@ public class RubikTileEntity extends TileEntity {
 	private int prevMove;
 	private boolean clockwise;
 	private int tempAngle;
+	private boolean scrambled; // TODO save these to NBT
 	private boolean scrambling;
 	private int scrambleCounter;
+	private String playerName;
 
 	@SideOnly(Side.CLIENT)
 	private RubikModel model;
@@ -110,9 +113,9 @@ public class RubikTileEntity extends TileEntity {
 					do {
 						randomMove = random.nextInt(3 * piecesPerSide);
 					} while (randomMove == prevMove);
-					
+
 					prevMove = randomMove;
-					setMove(randomMove, random.nextBoolean());
+					setMove(randomMove, random.nextBoolean(), "");
 					worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 				}
 			}
@@ -169,7 +172,7 @@ public class RubikTileEntity extends TileEntity {
 	private void getFace() {
 		if (move == NO_MOVE)
 			return;
-		System.out.println("** GETTING FACE **");
+		// System.out.println("** GETTING FACE **");
 		int pps = piecesPerSide;
 		int i = 0;
 		int slice = move % pps;
@@ -188,7 +191,9 @@ public class RubikTileEntity extends TileEntity {
 					// face[i] =
 					// pieces[piece.getX()][piece.getY()][piece.getZ()];
 
-					System.out.println((worldObj.isRemote ? "Client" : "Server") + " Face: " + (new Vector3i(x, y, z)).toString() + " = " + piece.toString());
+					// System.out.println((worldObj.isRemote ? "Client" :
+					// "Server") + " Face: " + (new Vector3i(x, y,
+					// z)).toString() + " = " + piece.toString());
 					if (face[i % pps][i / pps] == null) {
 						System.out.println("FOUND NULL PIECE WHILE CREATING THE FACE D:");
 						continue;
@@ -203,7 +208,7 @@ public class RubikTileEntity extends TileEntity {
 	private void performMove() {
 		if (move == NO_MOVE)
 			return;
-		System.out.println("** PERFORMING MOVE **");
+		// System.out.println("** PERFORMING MOVE **");
 		int pps = piecesPerSide;
 
 		Vector3i[][][] previousCube = new Vector3i[piecesPerSide][piecesPerSide][piecesPerSide];
@@ -252,7 +257,9 @@ public class RubikTileEntity extends TileEntity {
 						continue;
 					if (axis == X_AXIS && x != slice)
 						continue;
-					System.out.println("Piece in " + (new Vector3i(x, y, z).toString()) + " is now " + face[i % pps][i / pps].toString());
+					// System.out.println("Piece in " + (new Vector3i(x, y,
+					// z).toString()) + " is now " + face[i % pps][i /
+					// pps].toString());
 					cube[x][y][z] = face[i % pps][i / pps];
 					i++;
 				}
@@ -267,14 +274,46 @@ public class RubikTileEntity extends TileEntity {
 			}
 		}
 
-		for (int x = 0; x < pps; x++) {
-			for (int y = 0; y < pps; y++) {
-				for (int z = 0; z < pps; z++) {
-					System.out.println(previousCube[x][y][z].toString() + (previousCube[x][y][z].equals(cube[x][y][z]) ? " didn't move" : " changed") + " and became " + cube[x][y][z].toString());
+		if (!scrambling && scrambled) {
+			if (!playerName.equalsIgnoreCase("") && isSolved()) {
+				switch (piecesPerSide) {
+					case 2:
+						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerForUsername(playerName).addStat(Achievements.pocketCube, 1);
+						break;
+					case 3:
+						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerForUsername(playerName).addStat(Achievements.rubikCube, 1);
+						break;
+					case 4:
+						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerForUsername(playerName).addStat(Achievements.revengeCube, 1);
+						break;
+					case 5:
+						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerForUsername(playerName).addStat(Achievements.professorCube, 1);
+						break;
+
 				}
+				
+				scrambled = false;
 			}
 		}
 
+	}
+
+	private boolean isSolved() {
+		Matrix3i id = new Matrix3i().setIdentity();
+		for (int x = 0; x < piecesPerSide; x++) {
+			for (int y = 0; y < piecesPerSide; y++) {
+				for (int z = 0; z < piecesPerSide; z++) {
+					if (!pieces[x][y][z].rotation.equals(id)) {
+						return false;
+					}
+				}
+			}
+		}
+		
+		//TODO fix weird achievement rendering
+		Minecraft.getMinecraft().thePlayer.addChatMessage("cube solved " + piecesPerSide);
+
+		return true;
 	}
 
 	@Override
@@ -357,31 +396,22 @@ public class RubikTileEntity extends TileEntity {
 
 	int tempMove = -1;
 
-	public boolean setMove(int i, boolean clock) {
-		if (move != NO_MOVE)
+	public boolean setMove(int i, boolean clock, String player) {
+		if (move != NO_MOVE || (scrambling && !player.equalsIgnoreCase("")))
 			return false;
-
-		System.out.println("__________________________________________________________________________");
-		System.out.println(" piece[0][0][0]: " + pieces[0][0][0].toString() + " Position: " + cube[0][0][0].toString());
-//		Random random = new Random();
-//		this.move = random.nextInt(3 * piecesPerSide);
-//		this.clockwise = random.nextBoolean();
-////		move = 2;
-//		// move = (tempMove + 1) % 9;
-//		tempMove = move;
-//		//clockwise = true;
-		move = i;
-		clockwise = clock;
+		this.move = i;
+		this.clockwise = clock;
+		this.playerName = player;
 		getFace();
-		System.out.println("MOVE: " + move + (clockwise ? " CLOCKWISE" : " ANTICLOCKWISE"));
-		Minecraft.getMinecraft().thePlayer.addChatMessage("MOVE: " + move + (clockwise ? " CLOCKWISE" : " ANTICLOCKWISE"));
+		Minecraft.getMinecraft().thePlayer.addChatMessage("MOVE: " + move + (clockwise ? " clockwise" : " anticlockwise"));
 		return true;
 	}
 
 	public void scramble() {
 		if (!scrambling) {
-			System.out.println("start scrambling");
+			System.out.println("started scrambling");
 			scrambling = true;
+			scrambled = true;
 		}
 	}
 

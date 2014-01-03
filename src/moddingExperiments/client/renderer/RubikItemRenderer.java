@@ -32,7 +32,8 @@ public class RubikItemRenderer implements IItemRenderer {
 	@Override
 	public void renderItem(ItemRenderType type, ItemStack stack, Object... data) {
 		int dmg = Math.min(stack.getItemDamage(), ConfigurationHandler.MAX_SIZE - 2);
-
+		
+		GL11.glDisable(GL11.GL_CULL_FACE);
 		GL11.glPushMatrix();
 		GL11.glScalef(-1F, -1F, 1F);
 
@@ -63,5 +64,6 @@ public class RubikItemRenderer implements IItemRenderer {
 		models[dmg].render(0.0625F);
 
 		GL11.glPopMatrix();
+		GL11.glEnable(GL11.GL_CULL_FACE);
 	}
 }
