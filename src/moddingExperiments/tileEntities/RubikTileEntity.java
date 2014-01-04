@@ -4,7 +4,8 @@ import java.util.Random;
 
 import moddingExperiments.achievements.Achievements;
 import moddingExperiments.client.models.RubikModel;
-import moddingExperiments.client.sound.Sounds;
+import moddingExperiments.client.particles.Particles;
+import moddingExperiments.client.sounds.Sounds;
 import moddingExperiments.config.ConfigurationHandler;
 import moddingExperiments.util.Matrix3i;
 import moddingExperiments.util.Vector3i;
@@ -14,6 +15,7 @@ import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.MathHelper;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -109,8 +111,8 @@ public class RubikTileEntity extends TileEntity {
 
 	@Override
 	public void updateEntity() {
+		System.out.println(worldObj.isRemote + " " + solveProgress + " " + getSolveProgress());
 		if (solving) {
-			System.out.println(solveProgress + " " + getSolveProgress());
 			if (solveProgress >= SOLVE_DURATION) {
 				solving = false;
 				solveProgress = 0;
@@ -118,9 +120,9 @@ public class RubikTileEntity extends TileEntity {
 					newCube(piecesPerSide);
 					worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 				}
-
+			} else {
+				solveProgress += SOLVE_SPEED;
 			}
-			solveProgress += SOLVE_SPEED;
 		}
 
 		if (move == NO_MOVE) {
@@ -335,8 +337,24 @@ public class RubikTileEntity extends TileEntity {
 
 		//TODO fix weird achievement rendering
 		Minecraft.getMinecraft().thePlayer.addChatMessage("cube solved " + piecesPerSide);
+		
+		spawnParticles();
 
 		return true;
+	}
+	
+	private void spawnParticles() {
+		Random rand = new Random();
+		for (int i = 0; i < 180; i+= 20) {
+			for (int j = 0; j < 360; j += 15) {
+				double v = 0.08 + 0.02 * rand.nextDouble();
+				double ci = Math.cos(Math.toRadians(i));
+				double si = Math.sin(Math.toRadians(i));
+				double cj = Math.cos(Math.toRadians(j));
+				double sj = Math.sin(Math.toRadians(j));
+				Particles.SOLVED.spawnParticle(worldObj, xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, v * sj * ci,v * cj, v * sj * si);
+			}
+		}
 	}
 
 	@Override
@@ -356,6 +374,7 @@ public class RubikTileEntity extends TileEntity {
 		tag.setByte("piecesPerSide", (byte) piecesPerSide);
 
 		tag.setBoolean("solving", solving);
+		tag.setByte("solveProgress", (byte) solveProgress);
 
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
@@ -388,7 +407,7 @@ public class RubikTileEntity extends TileEntity {
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		readFromNBT(pkt.data);
 		getFace();
-		System.out.println("Packet Received Move: " + move + (clockwise ? " clockwise" : " anticlockwise"));
+		Minecraft.getMinecraft().thePlayer.addChatMessage("Packet Received Move: " + move + (clockwise ? " clockwise" : " anticlockwise"));
 	}
 
 	@Override
@@ -398,7 +417,7 @@ public class RubikTileEntity extends TileEntity {
 		//TODO different NBT read/write for packets or save game
 
 		int pps = piecesPerSide = tag.getByte("piecesPerSide");
-		// TODO read and save pps from nbt
+
 		pieces = new Piece[pps][pps][pps];
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
@@ -422,6 +441,7 @@ public class RubikTileEntity extends TileEntity {
 		tempAngle = tag.getInteger("tempAngle");
 
 		solving = tag.getBoolean("solving");
+		solveProgress = tag.getByte("solveProgress");
 	}
 
 	int tempMove = -1;
@@ -474,6 +494,7 @@ public class RubikTileEntity extends TileEntity {
 
 	public void printCube() {
 		System.out.println("******** PRINTING THE CUBE ********");
+		spawnParticles();
 		int pps = piecesPerSide;
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
@@ -492,6 +513,14 @@ public class RubikTileEntity extends TileEntity {
 
 	public float getSolveProgress() {
 		return 1 - ((float) solveProgress / (float) SOLVE_DURATION);
+	}
+
+	public boolean isMoving() {
+		return move != NO_MOVE;
+	}
+
+	public float getTempAngleProgress() {
+		return (float) Math.sin(Math.toRadians(2 * tempAngle));
 	}
 
 }

@@ -62,7 +62,7 @@ public class RubikItemRenderer implements IItemRenderer {
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(RubikRenderer.texture);
 		models[dmg].render(0.0625F);
-
+		
 		GL11.glPopMatrix();
 		GL11.glEnable(GL11.GL_CULL_FACE);
 	}

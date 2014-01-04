@@ -29,6 +29,9 @@ public class Items {
 		
 		LanguageRegistry.addName(new ItemStack(scramblerItem.itemID, 1, 0), ItemInfo.SCRAMBLER_ITEM_NAME);
 		LanguageRegistry.addName(new ItemStack(scramblerItem.itemID, 1, 1), ItemInfo.SOLVER_ITEM_NAME);
+		
+		//TODO
+		LanguageRegistry.addName(new ItemStack(scramblerItem.itemID, 1, 2), "Printer");
 	}
 
 	public static void registerRecipies() {

@@ -1,6 +1,6 @@
 package moddingExperiments.blocks;
 
-import moddingExperiments.client.sound.Sounds;
+import moddingExperiments.client.sounds.Sounds;
 import moddingExperiments.config.ConfigurationHandler;
 import moddingExperiments.items.Items;
 import moddingExperiments.lib.BlockInfo;

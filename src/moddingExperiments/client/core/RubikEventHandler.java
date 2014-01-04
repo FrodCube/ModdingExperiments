@@ -61,18 +61,31 @@ public class RubikEventHandler {
 		double hitY = pieceWidth * (int) ((event.target.hitVec.yCoord - y) / pieceWidth);
 		double hitZ = pieceWidth * (int) ((event.target.hitVec.zCoord - z) / pieceWidth);
 
-		// int front = (MathHelper.floor_double((double)
-		// (event.player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 1;
-		// front = front == 1 ? 2 : (front == 2 ? 5 : front);
-
 		int front = ((MathHelper.floor_double((Math.toDegrees(Math.atan2(z + 0.5 - playerZ, x + 0.5 - playerX)) - 45) * 4.0 / 360.0)) & 3) + 1;
 		front = front == 1 ? 2 : (front == 2 ? 5 : front);
+
+		// TODO config option
+		glow += increasing ? 6 : -6;
+		if (glow >= GLOW_TIME) {
+			glow = (int) GLOW_TIME;
+			increasing = false;
+		} else if (glow < 0) {
+			glow = 0;
+			increasing = true;
+		}
+		float progress = glow / GLOW_TIME;
 
 		GL11.glPushMatrix();
 		GL11.glScaled(0.99, 0.99, 0.99);
 		GL11.glTranslated(x - playerX + 0.5, y - playerY + 0.5, z - playerZ + 0.5);
+		GL11.glColor4f(1, 1, 1, 0.1F + progress * 0.1F);
 
-		if (event.player.getCurrentEquippedItem() == null || event.player.getCurrentEquippedItem().itemID != Items.scramblerItem.itemID) {
+		if (rubik.isMoving()) {
+			float prog = 1.0F + 0.42F * rubik.getTempAngleProgress();
+			GL11.glColor4f(1, 1, 1, 0.1F + rubik.getTempAngleProgress() * 0.7F);
+			GL11.glScaled(prog, prog, prog);
+			drawBox(1);
+		} else if (event.player.getCurrentEquippedItem() == null || event.player.getCurrentEquippedItem().itemID != Items.scramblerItem.itemID) {
 			if (face == 0 || face == 1) {
 				if (front < 4) {
 					GL11.glRotatef(90, 0, 1, 0);
@@ -101,19 +114,8 @@ public class RubikEventHandler {
 	}
 
 	private void drawBox(double width) {
-		// TODO config option
-		glow += increasing ? 6 : -6;
-		if (glow >= GLOW_TIME) {
-			glow = (int) GLOW_TIME;
-			increasing = false;
-		} else if (glow < 0) {
-			glow = 0;
-			increasing = true;
-		}
-		float progress = glow / GLOW_TIME;
-
 		Tessellator tessellator = Tessellator.instance;
-		GL11.glColor4f(1, 1, 1, 0.1F + progress * 0.1F);
+
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);

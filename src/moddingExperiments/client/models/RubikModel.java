@@ -59,12 +59,13 @@ public class RubikModel extends ModelBase {
 
 					float angle = rotation.getAngle();
 					if (angle != 0) {
-						System.out.println("model " + solveProgress);
 						angle = (float) Math.toDegrees(angle);
 						angle *= solveProgress;
 						Vector3f axis = rotation.getAxis();	
 						GL11.glRotatef(angle, axis.getX(), axis.getY(), axis.getZ());
 					}
+					
+//					System.out.println("angle " + angle + " prog " + solveProgress);
 
 					int tempAngle = Math.abs(tempRotation.dot(new Vector3i(1, 1, 1)));
 					if (tempAngle != 0) {

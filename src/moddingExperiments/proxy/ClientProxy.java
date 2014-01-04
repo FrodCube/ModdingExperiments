@@ -3,7 +3,7 @@ package moddingExperiments.proxy;
 import moddingExperiments.client.core.RubikEventHandler;
 import moddingExperiments.client.renderer.RubikItemRenderer;
 import moddingExperiments.client.renderer.RubikRenderer;
-import moddingExperiments.client.sound.SoundHandler;
+import moddingExperiments.client.sounds.SoundHandler;
 import moddingExperiments.lib.ItemInfo;
 import moddingExperiments.tileEntities.RubikTileEntity;
 import net.minecraftforge.client.MinecraftForgeClient;

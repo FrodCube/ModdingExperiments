@@ -1,4 +1,4 @@
-package moddingExperiments.client.sound;
+package moddingExperiments.client.sounds;
 
 import moddingExperiments.lib.ModInfo;
 import net.minecraft.client.Minecraft;

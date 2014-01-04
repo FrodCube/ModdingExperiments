@@ -32,6 +32,7 @@ public class ScramblerItem extends Item {
 	public void getSubItems(int id, CreativeTabs tab, List list) {
 		list.add(new ItemStack(id, 1, 0));
 		list.add(new ItemStack(id, 1, 1));
+		list.add(new ItemStack(id, 1, 2));
 	}
 
 	@Override
@@ -43,6 +44,8 @@ public class ScramblerItem extends Item {
 					((RubikTileEntity) te).scramble();
 				} else if (stack.getItemDamage() == 1) {
 					((RubikTileEntity) te).solve();
+				} else if (stack.getItemDamage() == 2) {
+					((RubikTileEntity) te).printCube();
 				}
 			}
 		}
