@@ -109,14 +109,25 @@ public class RubikEventHandler {
 		} else {
 			drawBox(1);
 		}
-
+		
 		GL11.glPopMatrix();
+		
+		if (rubik.isScrambling()) {
+			GL11.glPushMatrix();
+			GL11.glTranslated(x - playerX + 0.5, y - playerY + 1.3, z - playerZ + 0.5);
+			double angle = event.player.prevRotationYaw + (event.player.rotationYaw - event.player.prevRotationYaw) * event.partialTicks;
+			GL11.glRotated(-angle, 0, 1, 0);
+			drawProgressBar(rubik.getScrambleProgress());
+			GL11.glPopMatrix();
+		}
+
+		
 	}
 
 	private void drawBox(double width) {
 		Tessellator tessellator = Tessellator.instance;
 
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);		
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -164,6 +175,39 @@ public class RubikEventHandler {
 
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
+	}
+	
+	private void drawProgressBar(float progress) {
+		Tessellator tessellator = Tessellator.instance;
+		
+		GL11.glDisable(GL11.GL_CULL_FACE);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		
+		double w = -0.7 + 1.4 * progress;
+		
+		GL11.glColor4f(1, 1, 1, 0.3F);
+
+		tessellator.startDrawingQuads();
+		tessellator.addVertex(w, 0.0, 0.0);
+		tessellator.addVertex(w, 0.15, 0.0);
+		tessellator.addVertex(0.7, 0.15, 0.0);
+		tessellator.addVertex(0.7, 0.0, 0.0);
+		tessellator.draw();
+		
+		GL11.glColor4f(0, 1, 0, 0.3F);
+
+		tessellator.startDrawingQuads();
+		tessellator.addVertex(-0.7, 0.0, 0.0);
+		tessellator.addVertex(-0.7, 0.15, 0.0);
+		tessellator.addVertex(w, 0.15, 0.0);
+		tessellator.addVertex(w, 0.0, 0.0);
+		tessellator.draw();
+		
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_CULL_FACE);
 	}
 
 }

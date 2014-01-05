@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.IItemRenderer;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 public class RubikItemRenderer implements IItemRenderer {
 
@@ -33,16 +34,15 @@ public class RubikItemRenderer implements IItemRenderer {
 	public void renderItem(ItemRenderType type, ItemStack stack, Object... data) {
 		int dmg = Math.min(stack.getItemDamage(), ConfigurationHandler.MAX_SIZE - 2);
 		
-		GL11.glDisable(GL11.GL_CULL_FACE);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GL11.glDepthMask(true);
 		GL11.glPushMatrix();
 		GL11.glScalef(-1F, -1F, 1F);
 
 		// TODO fix positions (shadow size!)
 		switch (type) {
 			case INVENTORY:
-				GL11.glTranslatef(0.5F, 0.0F, 0.0F);
-				GL11.glRotatef(90, 0, 1, 0);
-				GL11.glTranslatef(-0.5F, 0.5F, 0.0F);
+				GL11.glTranslatef(0.0F, 0.9F, 0.0F);
 				break;
 			case EQUIPPED:
 				GL11.glRotatef(180, 0, 1, 0);
@@ -64,6 +64,5 @@ public class RubikItemRenderer implements IItemRenderer {
 		models[dmg].render(0.0625F);
 		
 		GL11.glPopMatrix();
-		GL11.glEnable(GL11.GL_CULL_FACE);
 	}
 }

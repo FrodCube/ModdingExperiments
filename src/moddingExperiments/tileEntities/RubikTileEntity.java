@@ -111,7 +111,6 @@ public class RubikTileEntity extends TileEntity {
 
 	@Override
 	public void updateEntity() {
-		System.out.println(worldObj.isRemote + " " + solveProgress + " " + getSolveProgress());
 		if (solving) {
 			if (solveProgress >= SOLVE_DURATION) {
 				solving = false;
@@ -132,6 +131,7 @@ public class RubikTileEntity extends TileEntity {
 						scrambling = false;
 						prevMove = NO_MOVE;
 						scrambleCounter = 0;
+						worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 					} else {
 						Random random = new Random();
 						scrambleCounter++;
@@ -298,7 +298,9 @@ public class RubikTileEntity extends TileEntity {
 		}
 
 		if (!scrambling && scrambled) {
-			if (!playerName.equalsIgnoreCase("") && isSolved()) {
+			if (!playerName.equalsIgnoreCase("") && isSolved()) {				
+				spawnParticles();
+				
 				switch (piecesPerSide) {
 					case 2:
 						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerForUsername(playerName).addStat(Achievements.pocketCube, 1);
@@ -337,8 +339,7 @@ public class RubikTileEntity extends TileEntity {
 
 		//TODO fix weird achievement rendering
 		Minecraft.getMinecraft().thePlayer.addChatMessage("cube solved " + piecesPerSide);
-		
-		spawnParticles();
+
 
 		return true;
 	}
@@ -375,6 +376,9 @@ public class RubikTileEntity extends TileEntity {
 
 		tag.setBoolean("solving", solving);
 		tag.setByte("solveProgress", (byte) solveProgress);
+		tag.setBoolean("scrambling", scrambling);
+		tag.setByte("scrambleCounter", (byte) scrambleCounter);
+
 
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
@@ -440,8 +444,10 @@ public class RubikTileEntity extends TileEntity {
 		clockwise = tag.getBoolean("clockwise");
 		tempAngle = tag.getInteger("tempAngle");
 
-		solving = tag.getBoolean("solving");
+		solving = tag.getBoolean("solving");		
 		solveProgress = tag.getByte("solveProgress");
+		scrambling = tag.getBoolean("scrambling");
+		scrambleCounter = tag.getByte("scrambleCounter");
 	}
 
 	int tempMove = -1;
@@ -468,7 +474,7 @@ public class RubikTileEntity extends TileEntity {
 	}
 
 	public void solve() {
-		if (move == NO_MOVE && !solving && !scrambling) {
+		if (move == NO_MOVE && !solving && !scrambling && !isSolved()) {
 			scrambled = false;
 			solving = true;
 			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
@@ -495,6 +501,7 @@ public class RubikTileEntity extends TileEntity {
 	public void printCube() {
 		System.out.println("******** PRINTING THE CUBE ********");
 		spawnParticles();
+		Minecraft.getMinecraft().guiAchievement.queueTakenAchievement(Achievements.pocketCube);
 		int pps = piecesPerSide;
 		for (int x = 0; x < pps; x++) {
 			for (int y = 0; y < pps; y++) {
@@ -521,6 +528,14 @@ public class RubikTileEntity extends TileEntity {
 
 	public float getTempAngleProgress() {
 		return (float) Math.sin(Math.toRadians(2 * tempAngle));
+	}
+	
+	public float getScrambleProgress() {
+		return (float) scrambleCounter / (float) ConfigurationHandler.SCRAMBLE_LENGTH;
+	}
+	
+	public boolean isScrambling() {
+		return scrambling;
 	}
 
 }

@@ -25,12 +25,12 @@ import cpw.mods.fml.common.network.NetworkMod;
 
 @Mod(modid = ModInfo.NAME, version = ModInfo.VERSION, name = ModInfo.NAME)
 @NetworkMod(clientSideRequired = true, serverSideRequired = false, channels = { ModInfo.CHANNEL }, packetHandler = PacketHandler.class)
-public class ModdingExperiments {
+public class RubiksCubes {
 
 	public static AchievementPage achievementPage;
 
 	@Instance(ModInfo.MODID)
-	public static ModdingExperiments instance;
+	public static RubiksCubes instance;
 
 	@SidedProxy(clientSide = "moddingExperiments.proxy.ClientProxy", serverSide = "moddingExperiments.proxy.CommonProxy")
 	public static CommonProxy proxy;
