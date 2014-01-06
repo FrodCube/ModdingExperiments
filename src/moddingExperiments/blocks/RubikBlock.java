@@ -1,5 +1,7 @@
 package moddingExperiments.blocks;
 
+import java.util.Random;
+
 import moddingExperiments.client.sounds.Sounds;
 import moddingExperiments.config.ConfigurationHandler;
 import moddingExperiments.items.Items;
@@ -12,8 +14,10 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -21,7 +25,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class RubikBlock extends BlockContainer {
 
 	public RubikBlock(int id, Material material) {
-		//TODO fix pick block
 		super(id, material);
 		setHardness(1.25F);
 		setResistance(7.0F);
@@ -42,6 +45,26 @@ public class RubikBlock extends BlockContainer {
 	@Override
 	public boolean isOpaqueCube() {
 		return false;
+	}
+	
+	@Override
+	public int idDropped(int par1, Random par2Random, int par3) {
+		return Items.rubikItem.itemID;
+	}
+	
+	@Override
+	public int damageDropped(int meta) {
+		return meta;
+	}
+	
+	@Override
+	public int idPicked(World par1World, int par2, int par3, int par4) {
+		return Items.rubikItem.itemID;
+	}	
+	
+	@Override
+	public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z) {
+		return super.getPickBlock(target, world, x, y, z);
 	}
 
 	@Override
