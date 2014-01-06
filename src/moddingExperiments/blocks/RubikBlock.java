@@ -61,11 +61,6 @@ public class RubikBlock extends BlockContainer {
 	public int idPicked(World par1World, int par2, int par3, int par4) {
 		return Items.rubikItem.itemID;
 	}	
-	
-	@Override
-	public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z) {
-		return super.getPickBlock(target, world, x, y, z);
-	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
