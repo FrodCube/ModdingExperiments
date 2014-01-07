@@ -17,6 +17,8 @@ public class ConfigurationHandler {
 		Configuration config = new Configuration(file);
 
 		config.load();
+		
+		//TODO make sure that what I get from the config is fine
 
 		int pps = getIntWithComment(config, "Options", "Maximum cube size", "The number of pieces on the side that the biggest cube can have (If the cube is bigger than 6x6 it will look a bit ugly)", 5);
 		MAX_SIZE = Math.max(2, Math.min(16, pps));
