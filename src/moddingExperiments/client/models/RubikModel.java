@@ -61,11 +61,9 @@ public class RubikModel extends ModelBase {
 					if (angle != 0) {
 						angle = (float) Math.toDegrees(angle);
 						angle *= solveProgress;
-						Vector3f axis = rotation.getAxis();	
+						Vector3f axis = rotation.getAxis();
 						GL11.glRotatef(angle, axis.getX(), axis.getY(), axis.getZ());
 					}
-					
-//					System.out.println("angle " + angle + " prog " + solveProgress);
 
 					int tempAngle = Math.abs(tempRotation.dot(new Vector3i(1, 1, 1)));
 					if (tempAngle != 0) {
@@ -132,6 +130,9 @@ public class RubikModel extends ModelBase {
 		for (int x = 0; x < pieces.length; x++) {
 			for (int y = 0; y < pieces.length; y++) {
 				for (int z = 0; z < pieces.length; z++) {
+					if (x != 0 && y != 0 && z != 0 && x != PIECES_PER_SIDE - 1 && y != PIECES_PER_SIDE - 1 && z != PIECES_PER_SIDE - 1) {
+						continue;
+					}
 					PieceRenderer piece = new PieceRenderer(this, 0, texY);
 					piece.addBox(OFFSET + PIECE_WIDTH * x - CENTER, OFFSET + PIECE_WIDTH * y - CENTER, OFFSET + PIECE_WIDTH * z - CENTER, INT_PIECE_WIDTH, INT_PIECE_WIDTH, INT_PIECE_WIDTH);
 					piece.setRotationPoint(CENTER, -CENTER, -CENTER);
@@ -145,7 +146,9 @@ public class RubikModel extends ModelBase {
 		for (int x = 0; x < pieces.length; x++) {
 			for (int y = 0; y < pieces.length; y++) {
 				for (int z = 0; z < pieces.length; z++) {
-					pieces[x][y][z].renderWithRotation(scale, rubik.getRotation(x, y, z), rubik.getTempRotation(x, y, z), rubik.getSolveProgress());
+					if (pieces[x][y][z] != null) {
+						pieces[x][y][z].renderWithRotation(scale, rubik.getRotation(x, y, z), rubik.getTempRotation(x, y, z), rubik.getSolveProgress());
+					}
 				}
 			}
 		}
@@ -155,7 +158,9 @@ public class RubikModel extends ModelBase {
 		for (int x = 0; x < pieces.length; x++) {
 			for (int y = 0; y < pieces.length; y++) {
 				for (int z = 0; z < pieces.length; z++) {
-					pieces[x][y][z].renderWithRotation(scale, new Matrix3i().setIdentity(), new Vector3i(), 0);
+					if (pieces[x][y][z] != null) {
+						pieces[x][y][z].renderWithRotation(scale, new Matrix3i().setIdentity(), new Vector3i(), 0);
+					}
 				}
 			}
 		}

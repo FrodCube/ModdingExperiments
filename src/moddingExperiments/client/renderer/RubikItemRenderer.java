@@ -42,7 +42,8 @@ public class RubikItemRenderer implements IItemRenderer {
 		// TODO fix positions (shadow size!)
 		switch (type) {
 			case INVENTORY:
-				GL11.glTranslatef(0.0F, 0.9F, 0.0F);
+				GL11.glRotatef(90, 0, 1, 0);
+				GL11.glTranslatef(-0.2F, 0.75F, 0.8F);
 				break;
 			case EQUIPPED:
 				GL11.glRotatef(180, 0, 1, 0);

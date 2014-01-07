@@ -5,7 +5,9 @@ import net.minecraft.client.particle.EntityFX;
 import net.minecraft.world.World;
 
 public enum Particles {
-	SOLVED;
+	SOLVED,
+	SCRAMBLED,
+	MAGIC;
 
 	public void spawnParticle(World world, double x, double y, double z, double vx, double vy, double vz) {
 		Minecraft mc = Minecraft.getMinecraft();
@@ -29,6 +31,12 @@ public enum Particles {
 			switch (this) {
 				case SOLVED:
 					particleEffect = new SolvedParticle(world, x, y, z, vx, vy, vz);
+					break;
+				case SCRAMBLED:
+					particleEffect = new ScrambledParticle(world, x, y, z, vx, vy, vz);
+					break;
+				case MAGIC:
+					particleEffect = new MagicParticle(world, x, y, z, vx, vy, vz);
 					break;
 			}
 

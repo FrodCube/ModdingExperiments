@@ -67,7 +67,7 @@ public class RubikTileEntity extends TileEntity {
 	private int prevMove;
 	private boolean clockwise;
 	private int tempAngle;
-	private boolean scrambled; // TODO save these to NBT
+	private boolean scrambled;
 	private boolean scrambling;
 	private boolean solving;
 	private int solveProgress;
@@ -107,6 +107,9 @@ public class RubikTileEntity extends TileEntity {
 		for (int x = 0; x < piecesPerSide; x++) {
 			for (int y = 0; y < piecesPerSide; y++) {
 				for (int z = 0; z < piecesPerSide; z++) {
+					if (x != 0 && y != 0 && z != 0 && x != piecesPerSide - 1 && y != piecesPerSide - 1 && z != piecesPerSide - 1) {
+						continue;
+					}
 					pieces[x][y][z] = new Piece();
 					cube[x][y][z] = new Vector3i(x, y, z);
 				}
@@ -126,6 +129,7 @@ public class RubikTileEntity extends TileEntity {
 				}
 			} else {
 				solveProgress += SOLVE_SPEED;
+				spawnMagicParticles();
 			}
 		}
 
@@ -136,6 +140,7 @@ public class RubikTileEntity extends TileEntity {
 						scrambling = false;
 						prevMove = NO_MOVE;
 						scrambleCounter = 0;
+						spawnScrambledParticles();
 						worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 					} else {
 						Random random = new Random();
@@ -214,13 +219,7 @@ public class RubikTileEntity extends TileEntity {
 						continue;
 					if (axis == X_AXIS && x != slice)
 						continue;
-					Vector3i piece = cube[x][y][z];
 					face[i % piecesPerSide][i / piecesPerSide] = cube[x][y][z];
-					
-					if (face[i % piecesPerSide][i / piecesPerSide] == null) {
-						System.out.println("FOUND NULL PIECE WHILE CREATING THE FACE D:");
-						continue;
-					}
 
 					i++;
 				}
@@ -278,14 +277,16 @@ public class RubikTileEntity extends TileEntity {
 		for (int x = 0; x < piecesPerSide; x++) {
 			for (int y = 0; y < piecesPerSide; y++) {
 				for (int z = 0; z < piecesPerSide; z++) {
-					pieces[x][y][z].performMove();
+					if (pieces[x][y][z] != null) {
+						pieces[x][y][z].performMove();
+					}
 				}
 			}
 		}
 
 		if (!scrambling && scrambled) {
 			if (!playerName.equalsIgnoreCase("") && isSolved()) {
-				spawnParticles();
+				spawnSolvedParticles();
 
 				switch (piecesPerSide) {
 					case 2:
@@ -315,7 +316,10 @@ public class RubikTileEntity extends TileEntity {
 		for (int x = 0; x < piecesPerSide; x++) {
 			for (int y = 0; y < piecesPerSide; y++) {
 				for (int z = 0; z < piecesPerSide; z++) {
-					if (!pieces[x][y][z].rotation.equals(pieces[0][0][0].rotation)) {
+					if (x != 0 && y != 0 && z != 0 && x != piecesPerSide - 1 && y != piecesPerSide - 1 && z != piecesPerSide - 1) {
+						continue;
+					}
+					if (pieces[x][y][z] != null && !pieces[x][y][z].rotation.equals(pieces[0][0][0].rotation)) {
 						Minecraft.getMinecraft().thePlayer.addChatMessage("Not solved. Fail at " + new Vector3i(x, y, z));
 						return false;
 					}
@@ -323,13 +327,12 @@ public class RubikTileEntity extends TileEntity {
 			}
 		}
 
-		// TODO fix weird achievement rendering
 		Minecraft.getMinecraft().thePlayer.addChatMessage("cube solved " + piecesPerSide);
 
 		return true;
 	}
 
-	private void spawnParticles() {
+	private void spawnSolvedParticles() {
 		Random rand = new Random();
 		for (int i = 0; i < 180; i += 20) {
 			for (int j = 0; j < 360; j += 15) {
@@ -341,6 +344,27 @@ public class RubikTileEntity extends TileEntity {
 				Particles.SOLVED.spawnParticle(worldObj, xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, v * sj * ci, v * cj, v * sj * si);
 			}
 		}
+	}
+
+	private void spawnScrambledParticles() {
+		Random rand = new Random();
+		for (int i = 0; i < 180; i += 20) {
+			for (int j = -60; j < 75; j += 15) {
+				double v = 0.1 + 0.02 * rand.nextDouble();
+				double ci = Math.cos(Math.toRadians(i));
+				double si = Math.sin(Math.toRadians(i));
+				double cj = Math.cos(Math.toRadians(j));
+				double sj = Math.sin(Math.toRadians(j));
+				Particles.SCRAMBLED.spawnParticle(worldObj, xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, (v + 0.05 * rand.nextDouble()) * sj * ci, 1.4 * v * cj, (v + 0.05 * rand.nextDouble()) * sj * si);
+			}
+		}
+	}
+
+	private void spawnMagicParticles() {
+		double r = 0.5 * getSolveProgress() + 0.5;
+		double angle = 10 * Math.PI * getSolveProgress();
+
+		Particles.MAGIC.spawnParticle(worldObj, xCoord + 0.5 + r * Math.cos(angle), yCoord, zCoord + 0.5 + r * Math.sin(angle), 0, 0.15, 0);
 	}
 
 	@Override
@@ -362,20 +386,28 @@ public class RubikTileEntity extends TileEntity {
 		tag.setByte("solveProgress", (byte) solveProgress);
 		tag.setBoolean("scrambling", scrambling);
 		tag.setBoolean("scrambled", scrambled);
-		tag.setByte("scrambleCounter", (byte) scrambleCounter);		
+		tag.setByte("scrambleCounter", (byte) scrambleCounter);
 		tag.setString("playerName", playerName);
 
 		for (int x = 0; x < piecesPerSide; x++) {
 			for (int y = 0; y < piecesPerSide; y++) {
 				for (int z = 0; z < piecesPerSide; z++) {
+					if (x != 0 && y != 0 && z != 0 && x != piecesPerSide - 1 && y != piecesPerSide - 1 && z != piecesPerSide - 1) {
+						continue;
+					}
 					Piece piece = pieces[x][y][z];
 					Vector3i vCube = cube[x][y][z];
 					NBTTagCompound pieceTag = new NBTTagCompound();
 
 					// TODO better networking, I'm sending too much stuff
-					pieceTag.setByteArray("rotation", piece.rotation.toArray());
-					pieceTag.setByteArray("tempRotation", piece.tempRotation.toArray());
-					pieceTag.setByteArray("cube", vCube.toArray());
+					if (piece != null) {
+						pieceTag.setByteArray("rotation", piece.rotation.toArray());
+						pieceTag.setByteArray("tempRotation", piece.tempRotation.toArray());
+					}
+					if (vCube != null) {
+						pieceTag.setByteArray("cube", vCube.toArray());
+					}
+
 					if (z == 0 && face[x][y] != null) {
 						pieceTag.setByteArray("face", face[x][y].toArray());
 					}
@@ -404,6 +436,9 @@ public class RubikTileEntity extends TileEntity {
 		for (int x = 0; x < piecesPerSide; x++) {
 			for (int y = 0; y < piecesPerSide; y++) {
 				for (int z = 0; z < piecesPerSide; z++) {
+					if (x != 0 && y != 0 && z != 0 && x != piecesPerSide - 1 && y != piecesPerSide - 1 && z != piecesPerSide - 1) {
+						continue;
+					}
 					NBTTagCompound pieceTag = tag.getCompoundTag(x + " " + y + " " + z);
 					pieces[x][y][z] = new Piece();
 					pieces[x][y][z].rotation = Matrix3i.fromArray(pieceTag.getByteArray("rotation"));
@@ -415,7 +450,7 @@ public class RubikTileEntity extends TileEntity {
 				}
 			}
 		}
-		
+
 		move = tag.getByte("move");
 		prevMove = tag.getByte("prevMove");
 		clockwise = tag.getBoolean("clockwise");
@@ -474,11 +509,14 @@ public class RubikTileEntity extends TileEntity {
 
 	public void printCube() {
 		System.out.println("******** PRINTING THE CUBE ********");
-		spawnParticles();
+		spawnScrambledParticles();
 		Minecraft.getMinecraft().guiAchievement.queueTakenAchievement(Achievements.pocketCube);
 		for (int x = 0; x < piecesPerSide; x++) {
 			for (int y = 0; y < piecesPerSide; y++) {
 				for (int z = 0; z < piecesPerSide; z++) {
+					if (x != 0 && y != 0 && z != 0 && x != piecesPerSide - 1 && y != piecesPerSide - 1 && z != piecesPerSide - 1) {
+						continue;
+					}
 					System.out.println((new Vector3i(x, y, z)).toString() + ": " + pieces[cube[x][y][z].getX()][cube[x][y][z].getY()][cube[x][y][z].getZ()].toString() + " POSITION: " + cube[x][y][z].toString());
 				}
 			}
